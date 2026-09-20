@@ -33,7 +33,7 @@
         <preference name="KeyboardDisplayRequiresUserAction" value="false" />
         <preference name="SuppressesLongPressGesture" value="true" />
 
-        <icon src="www/res/icon.png" />
+        <icon src="www/res/icon-ios.png" />
     </platform>
 
 </widget>
