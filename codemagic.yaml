@@ -104,5 +104,5 @@ workflows:
           ls -lh RodMod-unsigned.ipa
 
     artifacts:
-      - ios/RodMod-unsigned.ipa
-      - ios/build/device/*.app
+      - $CM_BUILD_DIR/ios/RodMod-unsigned.ipa
+      - $CM_BUILD_DIR/ios/build/device/*.app
