@@ -1,0 +1,38 @@
+workflows:
+  rodmod-ios:
+    name: RodMod iOS
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+
+    working_directory: ios
+
+    environment:
+      node: 24
+      xcode: latest
+
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+          npm install -g cordova@13.0.0
+
+      - name: Sync RodMod script
+        script: |
+          cp ../shared/rodmod-mystera.js www/rodmod-mystera.js
+
+      - name: Add iOS platform
+        script: |
+          rm -rf platforms
+          cordova platform add ios@8.1.0
+
+      - name: Prepare iOS
+        script: |
+          cordova prepare ios
+
+      - name: Build iOS simulator
+        script: |
+          cordova build ios --debug --emulator
+
+    artifacts:
+      - ios/platforms/ios/build/**/*.app
+      - ios/platforms/ios/build/**/*.log
