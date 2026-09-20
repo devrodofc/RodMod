@@ -1,0 +1,18 @@
+version: 3.0.3
+apkFileName: base.apk
+usesFramework:
+  ids:
+  - 1
+sdkInfo:
+  minSdkVersion: 21
+  targetSdkVersion: 28
+versionInfo:
+  versionCode: 10041
+  versionName: 5.0.4
+resourcesInfo:
+  packageId: 127
+doNotCompress:
+- arsc
+- jpg
+- mp3
+- png

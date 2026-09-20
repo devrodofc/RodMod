@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:compileSdkVersion="23" android:compileSdkVersionCodename="6.0-2438415" android:hardwareAccelerated="true" package="com.mysteralegacy.mmorpg.rodmod" platformBuildVersionCode="23" platformBuildVersionName="6.0-2438415">
+    <supports-screens android:anyDensity="true" android:largeScreens="true" android:normalScreens="true" android:resizeable="true" android:smallScreens="true" android:xlargeScreens="true"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <application android:debuggable="true" android:hardwareAccelerated="true" android:icon="@mipmap/ic_launcher" android:label="RodMod" android:supportsRtl="true">
+        <activity android:configChanges="locale|keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize" android:label="RodMod" android:launchMode="standard" android:name="com.mysteralegacy.mmorpg.sandboy.MainActivity" android:theme="@android:style/Theme.NoTitleBar.Fullscreen" android:windowSoftInputMode="adjustResize">
+            <intent-filter android:label="RodMod">
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>

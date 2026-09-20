@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<widget android-versionCode="10041" id="com.mysteralegacy.mmorpg.rodmod" version="5.0.4"
+  xmlns:android="http://www.w3.org/ns/widgets" xmlns:gap="http://phonegap.com/ns/1.0">
+    <android:feature name="SplashScreen">
+        <android:param name="android-package" value="org.apache.cordova.splashscreen.SplashScreen" />
+        <android:param name="onload" value="true" />
+    </android:feature>
+    <android:feature name="Whitelist">
+        <android:param name="android-package" value="org.apache.cordova.whitelist.WhitelistPlugin" />
+        <android:param name="onload" value="true" />
+    </android:feature>
+    <android:feature name="CDVOrientation">
+        <android:param name="android-package" value="cordova.plugins.screenorientation.CDVOrientation" />
+    </android:feature>
+    <android:feature name="StatusBar">
+        <android:param name="android-package" value="org.apache.cordova.statusbar.StatusBar" />
+        <android:param name="onload" value="true" />
+    </android:feature>
+    <android:feature name="AndroidFullScreen">
+        <android:param name="android-package" value="com.mesmotronic.plugins.FullScreenPlugin" />
+    </android:feature>
+    <android:feature name="InAppBrowser">
+        <android:param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
+    </android:feature>
+    <android:name>Pablo Mod</android:name>
+    <android:description />
+    <android:author email="jvhdevelopment@gmail.com" href="http://www.mysteralegacy.com" />
+    <android:edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application/activity">
+        <android:activity android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+    </android:edit-config>
+    <android:content src="index.html" />
+    <android:access origin="*" />
+    <android:allow-navigation href="*" />
+    <android:allow-intent href="*" />
+    <android:icon src="www/res/icon.png" />
+    <android:preference name="loglevel" value="DEBUG" />
+    <android:preference name="Fullscreen" value="true" />
+    <android:preference name="webviewbounce" value="false" />
+    <android:preference name="DisallowOverscroll" value="true" />
+    <android:preference name="AndroidLaunchMode" value="singleInstance" />
+    <android:preference name="KeepRunning" value="true" />
+    <android:preference name="AutoHideSplashScreen" value="true" />
+    <android:preference name="SplashScreenDelay" value="0" />
+    <android:preference name="SplashScreenBackgroundColor" value="black" />
+    <android:preference name="ShowSplashScreen" value="false" />
+    <android:preference name="SplashShowOnlyFirstTime" value="false" />
+    <android:preference name="loadUrlTimeoutValue" value="700000" />
+    <android:preference name="android-minSdkVersion" value="21" />
+    <android:preference name="android-targetSdkVersion" value="28" />
+</widget>

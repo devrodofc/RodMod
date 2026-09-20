@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "RodMod",
+  "version": "1.0.0",
+  "description": "RodMod para Mystera Legacy",
+
+  "minimum_chrome_version": "102",
+
+  "icons": {
+    "48": "icons/icon.png",
+    "128": "icons/icon.png"
+  },
+
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.mysteralegacy.com/*",
+        "http://www.mysteralegacy.com/*"
+      ],
+      "js": [
+        "rodmod-mystera.js"
+      ],
+      "run_at": "document_idle",
+      "world": "MAIN"
+    }
+  ]
+}

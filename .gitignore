@@ -1,0 +1,27 @@
+# Android builds e assinatura
+*.apk
+*.aab
+*.idsig
+*.keystore
+*.jks
+
+# Cordova / Node
+node_modules/
+platforms/
+plugins/
+
+# Build temporário
+build/
+dist/
+tmp/
+
+# Sistema / editor
+.DS_Store
+*.log
+.idea/
+.vscode/
+
+# Arquivos antigos ou não utilizados
+pabloob-clean.js
+mystera-clean.js
+android/decoded/original/META-INF/
