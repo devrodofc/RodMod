@@ -66,22 +66,8 @@
     </script>
 
     <script>
-        (function carregarRodMod() {
-            if (
-                typeof window.jv !== 'undefined' &&
-                typeof window.jv.state !== 'undefined'
-            ) {
-                const script = document.createElement('script');
-                script.src = 'rodmod-mystera.js';
-                script.id = 'rodmod-script';
-                document.body.appendChild(script);
+        // RodMod desativado temporariamente para teste de login
 
-                console.log('[RodMod] carregado');
-                return;
-            }
-
-            setTimeout(carregarRodMod, 250);
-        })();
     </script>
 </body>
 </html>
