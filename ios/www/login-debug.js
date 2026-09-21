@@ -166,7 +166,26 @@
                     )
                 );
 
-                return original.apply(this, arguments);
+                try {
+                    return original.apply(this, arguments);
+                } catch (e) {
+                    log("LOGIN EXCEPTION: " + e.name + ": " + e.message);
+
+                    if (e.stack) {
+                        log("STACK: " + e.stack);
+                    }
+
+                    log(
+                        "base64_encode=" +
+                        typeof jv.base64_encode +
+                        " | userLength=" +
+                        jv.login_dialog.username.chars.length +
+                        " | passLength=" +
+                        jv.login_dialog.password.chars.length
+                    );
+
+                    throw e;
+                }
             };
 
             login.__iosDebugWrapped = true;
