@@ -4,7 +4,7 @@ document.addEventListener("deviceready", function () {
     status.textContent = "Abrindo Mystera...";
 
     const browser = cordova.InAppBrowser.open(
-        "https://www.mysteralegacy.com/play/",
+        "https://www.mysteralegacy.com/play/full.php",
         "_blank",
         "location=no,toolbar=no,hidden=yes,disallowoverscroll=yes"
     );
