@@ -45,3 +45,34 @@
         };
     }
 })();
+
+/*
+ * No iOS, mantém a interface Cordova/mobile,
+ * mas identifica o cliente ao servidor como cliente web.
+ */
+(function () {
+    if (!window.WebSocket || !window.WebSocket.prototype.send) {
+        return;
+    }
+
+    const originalSend = window.WebSocket.prototype.send;
+
+    window.WebSocket.prototype.send = function (data) {
+        try {
+            const packet = JSON.parse(data);
+
+            if (packet && packet.type === "client") {
+                packet.mobile = false;
+                data = JSON.stringify(packet);
+
+                console.log(
+                    "[iOS Compat] client packet enviado em modo web"
+                );
+            }
+        } catch (e) {
+            // Pacotes que não forem JSON seguem normalmente.
+        }
+
+        return originalSend.call(this, data);
+    };
+})();
