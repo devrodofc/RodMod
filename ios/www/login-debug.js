@@ -166,6 +166,13 @@
                     )
                 );
 
+                log(
+                    "CAMPOS | userLength=" +
+                    jv.login_dialog.username.chars.length +
+                    " | passLength=" +
+                    jv.login_dialog.password.chars.length
+                );
+
                 try {
                     return original.apply(this, arguments);
                 } catch (e) {
