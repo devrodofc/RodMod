@@ -1,96 +1,83 @@
-document.addEventListener("deviceready", async function () {
+document.addEventListener("deviceready", function () {
     const status = document.getElementById("status");
 
-    try {
-        status.textContent = "Carregando RodMod...";
+    status.textContent = "Abrindo Mystera...";
 
-        // Lê o RodMod que está empacotado dentro do próprio app.
-        const response = await fetch("rodmod-mystera.js");
+    const browser = cordova.InAppBrowser.open(
+        "https://www.mysteralegacy.com/play/",
+        "_blank",
+        "location=no,toolbar=no,hidden=yes,disallowoverscroll=yes"
+    );
 
-        if (!response.ok) {
-            throw new Error("Não foi possível carregar rodmod-mystera.js");
-        }
+    let finished = false;
+    let attempts = 0;
 
-        const rodmodSource = await response.text();
+    function waitForGame() {
+        if (finished) return;
 
-        const browser = cordova.InAppBrowser.open(
-            "https://www.mysteralegacy.com/play/",
-            "_blank",
-            "location=no,toolbar=no,hidden=yes,disallowoverscroll=yes"
-        );
+        attempts++;
 
-        let shown = false;
+        browser.executeScript(
+            {
+                code: `
+                    typeof window.jv !== "undefined" &&
+                    typeof window.jv.state !== "undefined";
+                `
+            },
+            function (result) {
+                if (result && result[0]) {
+                    status.textContent = "Carregando RodMod...";
 
-        function injectRodMod() {
-            // Primeiro verifica se o jogo web já criou o objeto jv.
-            browser.executeScript(
-                {
-                    code: `
-                        typeof window.jv !== "undefined" &&
-                        typeof window.jv.state !== "undefined";
-                    `
-                },
-                function (result) {
-                    if (!result || !result[0]) {
-                        setTimeout(injectRodMod, 250);
-                        return;
-                    }
-
-                    // Evita carregar o RodMod duas vezes.
                     browser.executeScript(
                         {
-                            code: `
-                                typeof window.dsk !== "undefined";
-                            `
+                            file: "rodmod-mystera.js"
                         },
-                        function (alreadyLoaded) {
-                            if (alreadyLoaded && alreadyLoaded[0]) {
-                                if (!shown) {
-                                    browser.show();
-                                    shown = true;
-                                }
-                                return;
-                            }
+                        function () {
+                            finished = true;
 
-                            browser.executeScript(
-                                {
-                                    code: rodmodSource
-                                },
-                                function () {
-                                    console.log("[RodMod iOS] RodMod injetado.");
+                            console.log("[RodMod iOS] RodMod injetado");
 
-                                    if (!shown) {
-                                        browser.show();
-                                        shown = true;
-                                    }
-                                }
-                            );
+                            browser.show();
                         }
                     );
+
+                    return;
                 }
-            );
-        }
 
-        browser.addEventListener("loadstop", function (event) {
-            console.log("[RodMod iOS] Página carregada:", event.url);
+                if (attempts >= 80) {
+                    // Se o jogo demorou demais, mostra pelo menos
+                    // o Mystera para não ficar preso na tela branca.
+                    console.log("[RodMod iOS] Timeout aguardando jv");
+                    finished = true;
+                    browser.show();
+                    return;
+                }
 
-            if (
-                event.url &&
-                event.url.includes("mysteralegacy.com")
-            ) {
-                injectRodMod();
+                setTimeout(waitForGame, 250);
             }
-        });
-
-        browser.addEventListener("loaderror", function (event) {
-            console.error("[RodMod iOS] Erro:", event.message);
-
-            status.textContent =
-                "Erro ao carregar Mystera: " + event.message;
-        });
-
-    } catch (error) {
-        console.error(error);
-        status.textContent = "Erro: " + error.message;
+        );
     }
+
+    browser.addEventListener("loadstop", function (event) {
+        console.log("[RodMod iOS] loadstop:", event.url);
+
+        if (
+            !finished &&
+            event.url &&
+            event.url.includes("mysteralegacy.com")
+        ) {
+            waitForGame();
+        }
+    });
+
+    browser.addEventListener("loaderror", function (event) {
+        console.error(
+            "[RodMod iOS] loaderror:",
+            event.code,
+            event.message
+        );
+
+        status.textContent =
+            "Erro ao carregar Mystera: " + event.message;
+    });
 });
