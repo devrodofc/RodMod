@@ -11,27 +11,27 @@
             }
         }, 1000);
     });
-console.log('PABLO: carregando eventemitter...');
+console.log('RODMOD: carregando eventemitter...');
   await new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/eventemitter3@5/dist/eventemitter3.umd.min.js';
-    script.onload = () => { console.log('PABLO: eventemitter OK'); resolve(); };
-    script.onerror = () => { console.error('PABLO: eventemitter FALHOU'); reject(); };
+    script.onload = () => { console.log('RODMOD: eventemitter OK'); resolve(); };
+    script.onerror = () => { console.error('RODMOD: eventemitter FALHOU'); reject(); };
     document.body.appendChild(script);
   });
 
 
-  console.log('PABLO: carregando chroma...');
+  console.log('RODMOD: carregando chroma...');
   await new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = 'https://cdn.jsdelivr.net/npm/chroma-js@2/chroma.min.js';
-    script.onload = () => { console.log('PABLO: chroma OK'); resolve(); };
-    script.onerror = () => { console.error('PABLO: chroma FALHOU'); reject(); };
+    script.onload = () => { console.log('RODMOD: chroma OK'); resolve(); };
+    script.onerror = () => { console.error('RODMOD: chroma FALHOU'); reject(); };
     document.body.appendChild(script);
   });
 
 
-  console.log('PABLO: dependências prontas, iniciando mod...');
+  console.log('RODMOD: dependências prontas, iniciando mod...');
   
   (function() {
     if (typeof jv === 'undefined') return;
@@ -5002,7 +5002,7 @@ dsk.menu = jv.Dialog.create(200, 320);
 dsk.menu.visible = false;
 
 
-dsk.menu.header = jv.text('Pablo Mod', {
+dsk.menu.header = jv.text('RodMod', {
   font: '14px Verdana',
   fill: 0xFFD700,
   stroke: 0x555555,
@@ -5060,7 +5060,7 @@ dsk.menu.items = [
 
   // ─── 🗡️ Hunt ─────────────────────────────────────────────
   { type: 'section', label: '🗡️  Hunt' },
-  { label: 'Hunt Hub',           state: () => !!document.getElementById('pablo-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
+  { label: 'Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
   { label: 'Rotation Config',    state: () => !!(typeof rm !== 'undefined' && rm?.visible),                 toggle: () => dsk.commands['/rotationconfig']() },
   { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
   { label: 'Auto Explo',         state: () => !!dsk.explo?.enabled,          toggle: () => dsk.commands['/explo']() },
@@ -5113,6 +5113,7 @@ dsk.menu.items = [
   { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible),                toggle: () => dsk.commands['/discordconfig']() },
   { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
   { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
+  { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,   toggle: () => dsk.commands['/hotbar']() },
   { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
   { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
   { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
@@ -5408,7 +5409,7 @@ dsk.setCmd('/counterattack', () => {
       { label: 'Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
     ]},
     { label: '🗡️  Hunt', items: [
-      { label: 'Hunt Hub',           state: () => !!document.getElementById('pablo-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
+      { label: 'Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
       { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
       { label: 'Counter-Attack',   state: () => !!window._caActive,       toggle: () => dsk.commands['/counterattack']() },
       { label: 'Auto Heal',          state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
@@ -5440,8 +5441,8 @@ dsk.setCmd('/counterattack', () => {
       { label: '% Barras',           state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
       { label: 'Habilidades',        state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
       { label: 'Inventario',         state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
-	  { label: 'Inv HTML',           state: () => !!document.getElementById('pablo-inv-html'), toggle: () => dsk.commands['/invhtml']() },
-	  { label: 'Gem Skills',  		 state: () => !!document.getElementById('pablo-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
+	  { label: 'Inv HTML',           state: () => !!document.getElementById('rodmod-inv-html'), toggle: () => dsk.commands['/invhtml']() },
+	  { label: 'Gem Skills',  		 state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
       { label: 'Onlines',            state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
       { label: 'Tribe List',         state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
       { label: 'Radar',              state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
@@ -5458,6 +5459,7 @@ dsk.setCmd('/counterattack', () => {
       { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
       { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
       { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
+      { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,  toggle: () => dsk.commands['/hotbar']() },
       { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
       { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
       { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
@@ -5470,7 +5472,7 @@ dsk.setCmd('/counterattack', () => {
 
 
     panel = document.createElement('div');
-    panel.id = 'pablo-hub';
+    panel.id = 'rodmod-hub';
     Object.assign(panel.style, {
       position:      'fixed',
       top:           '60px',
@@ -5505,7 +5507,7 @@ dsk.setCmd('/counterattack', () => {
 
 
     const title = document.createElement('span');
-    title.textContent = '☰ Pablo Mod';
+    title.textContent = '☰ RodMod';
     Object.assign(title.style, { color: '#FFD700', fontWeight: 'bold', fontSize: '13px' });
 
 
@@ -6853,7 +6855,7 @@ window.wcStat = window.wcStat ?? {
 
 
 // ══════════════════════════════════════════════════════════════
-// 🐍  SNAKE Hazard BOT  ─  by Pablo Mod
+// 🐍  SNAKE Hazard BOT  ─  by RodMod
 // Mobs: Snake, Serpent, Nether Leech
 // Reparo: WP 6 (40,38) → move 43,41 dropa → move 43,40 vira baixo repara → move 43,41 pega
 // ══════════════════════════════════════════════════════════════
@@ -7469,7 +7471,7 @@ dsk.setCmd('/snakepit', () => {
 
 
 // ══════════════════════════════════════════════════════════════
-// ❄️  SNOW BOT  ─  by Pablo Mod
+// ❄️  SNOW BOT  ─  by RodMod
 // Mobs: Ice Elemental, Polar Bear, Penguin, Wolf
 // Reparo: WP 10 (57,10) → move 50,6 dropa → move 50,7 vira cima repara → move 50,6 pega
 // ══════════════════════════════════════════════════════════════
@@ -8060,7 +8062,7 @@ dsk.setCmd('/snow', () => {
 
 
 // ══════════════════════════════════════════════════════════════
-// ⚰️  CEMETERY BOT  ─  by Pablo Mod
+// ⚰️  CEMETERY BOT  ─  by RodMod
 // Mobs: Ghost, Skeleton, Skeleton Lord
 // Reparo: WP 5 (29,48 → dropa → 29,47 vira baixo repara → pega)
 // ══════════════════════════════════════════════════════════════
@@ -11381,7 +11383,7 @@ async function xSSDRepair() {
 
 
 // ══════════════════════════════════════════════════════════════
-// ⛏️  WC MINING BOT  ─  by Pablo Mod
+// ⛏️  WC MINING BOT  ─  by RodMod
 // Mobs: Dire Wolf, Ice Elemental, Polar Bear, Wolf
 // Reparo: in-place (dropa item, equipa kit, move 1 tile adj, vira, repara, volta, pega)
 // Alvo: both (Shiny Rock + todas as pedras)
@@ -12753,7 +12755,7 @@ dsk.on('postPacket:inv', () => {
 
 
 // ══════════════════════════════════════════════════════════════
-// 🎒  LOOT TRACKER STANDALONE  ─  by Pablo Mod
+// 🎒  LOOT TRACKER STANDALONE  ─  by RodMod
 // Abre o tracker de qualquer lugar, sem precisar do Mine Hub
 // Comando: /loottracker
 // ══════════════════════════════════════════════════════════════
@@ -15224,7 +15226,7 @@ dirs: [0,1,2,3] → repara todas as 4 direções (sala central)*/
 // ── TOP SKILL CALCULATOR ─────────────────────────────────────
 // Baseado na planilha "Mystera Legacy Top Skill Calculator" by Sidran (EU)
 //
-// Adicione este bloco ao final do seu _pabloLoad, antes do fechamento };
+// Adicione este bloco ao final do seu _rodmodLoad, antes do fechamento };
 //
 // COMO USAR:
 //   /topskill        → abre/fecha o painel
@@ -15535,7 +15537,7 @@ dsk.tsc = {
 
 
 // ══════════════════════════════════════════════════════════════
-// 🌲  FOREST BOT  ─  by Pablo Mod
+// 🌲  FOREST BOT  ─  by RodMod
 // Config: /forestconfig  |  Toggle: /forest
 // ══════════════════════════════════════════════════════════════
 
@@ -16173,7 +16175,7 @@ dsk.on('postLoop', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// 🌲  RECURSOS BOT  ─  by Pablo Mod
+// 🌲  RECURSOS BOT  ─  by RodMod
 // Config: /recursosconfig  |  Toggle: /recursos
 // ══════════════════════════════════════════════════════════════
 dsk.recursos = { enabled: false };
@@ -19041,6 +19043,7 @@ dsk.setCmd('/btnhub', () => {
 
 
     panel = document.createElement('div');
+    panel.id = 'rodmod-hunt-hub';
     Object.assign(panel.style, {
       position:      'fixed',
       top:           '120px',
@@ -19725,7 +19728,7 @@ dsk.checkBotActive = () => {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 🗡️  SSD HUNT BOT  ─  by Pablo Mod
+// 🗡️  SSD HUNT BOT  ─  by RodMod
 // Bot de caça na área do SSD: mesmos waypoints, mesmos mobs
 // NÃO minera pedras — foca em mobs, chests e drops
 // Reparo igual ao SSD (fixo ou in-place)
@@ -20469,7 +20472,7 @@ async function xSSDHuntRepair() {
 
 
 // ══════════════════════════════════════════════════════════════
-// 💀  DEATH TRACKER  ─  by Pablo Mod
+// 💀  DEATH TRACKER  ─  by RodMod
 // Detecta morte automaticamente e salva local + coordenadas
 // Sempre ativo — sem precisar ligar nada
 // Comando: /deathtracker  → abre/fecha o painel
@@ -22330,7 +22333,7 @@ dsk.setCmd('/teleport', () => {
 
 
 // ══════════════════════════════════════════════════════════════
-// ⚒️  SMITH BOT  ─  by Pablo Mod
+// ⚒️  SMITH BOT  ─  by RodMod
 // Farm de smithing no Anvil: bate até 70%, retira item, dropa,
 // recoloca e repete. Repara o martelo automaticamente se quebrar.
 //
@@ -22868,7 +22871,7 @@ dsk.setCmd('/smith', () => {
 })();
 
 // ══════════════════════════════════════════════════════════════
-// 🎒 INV HTML  ─  by Pablo Mod
+// 🎒 INV HTML  ─  by RodMod
 // 75 slots numa grade única, sprites via WebGL readPixels,
 // drag to swap entre quaisquer slots, tooltip + badge qty + dot.
 // Comando: /invhtml
@@ -22971,7 +22974,7 @@ dsk.setCmd('/smith', () => {
     const W     = gridW + PAD * 2;
 
     panel = document.createElement('div');
-    panel.id = 'pablo-inv-html';
+    panel.id = 'rodmod-inv-html';
     Object.assign(panel.style, {
       position: 'fixed', top: '80px', left: '50%', transform: 'translateX(-50%)',
       width: W + 'px', background: '#1e1e2e', border: '1px solid #444',
@@ -23328,7 +23331,7 @@ function _skillDialogCustomUpdate() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// 💎  GEM SKILLS PANEL  ─  by Pablo Mod
+// 💎  GEM SKILLS PANEL  ─  by RodMod
 // Mostra as 37 skills com nome, gemas necessárias e sprites
 // Comando: /gemskills
 // ══════════════════════════════════════════════════════════════
@@ -23566,7 +23569,7 @@ function _skillDialogCustomUpdate() {
     filterGem  = 'All';
 
     gsPanel = document.createElement('div');
-    gsPanel.id = 'pablo-gem-skills';
+    gsPanel.id = 'rodmod-gem-skills';
     Object.assign(gsPanel.style, {
       position: 'fixed', top: '80px', left: '50%',
       transform: 'translateX(-50%)',
@@ -23764,8 +23767,8 @@ dsk.setCmd('/hotbar', () => {
     jv.hot_scene.x = 740 - totalW;
 
     for (var e = 0; e < TOTAL; e++) {
-      var col = Math.floor(e / ROWS);
-      var row = e % ROWS;
+      var col = e % COLS;
+      var row = Math.floor(e / COLS);
 
       jv.hot_button[e] = jv.Button.create(
         col * COL_SPACING, row * ROW_SPACING,
@@ -24014,7 +24017,7 @@ dsk.setCmd('/hotbar2', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// ⚔️  ASSASSIN WINNER BOT  ─  by Pablo Mod
+// ⚔️  ASSASSIN WINNER BOT  ─  by RodMod
 // Conta que GANHA o duelo (upando Assassin)
 // Config: /assassinconfig  |  Toggle: /assassin
 // ══════════════════════════════════════════════════════════════
@@ -24234,7 +24237,7 @@ dsk.on('postLoop', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-// 🛡️  ASSASSIN LOSER BOT  ─  by Pablo Mod
+// 🛡️  ASSASSIN LOSER BOT  ─  by RodMod
 // Conta que PERDE o duelo (alt que reativa a estátua)
 // Config: /loserconfig  |  Toggle: /loser
 // ══════════════════════════════════════════════════════════════
@@ -24389,7 +24392,7 @@ dsk.on('postLoop', () => {
 });
 
 // ══════════════════════════════════════════════════════════════
-//  CRYSTAL ROCK BOT  –  baseado no modpablo
+//  CRYSTAL ROCK BOT  –  baseado no rodmod
 //  Slots: 0=arma  1=shield  2=armor  3=pickareta
 //  Crystal Rock ID: 772
 // ══════════════════════════════════════════════════════════════
@@ -24512,7 +24515,7 @@ dsk.on('postLoop', () => {
 
 
   // ════════════════════════════════════════════════════════════
-  //  REPARO IN-PLACE  (fiel ao xSSDRepairInPlace do modpablo)
+  //  REPARO IN-PLACE  (fiel ao xSSDRepairInPlace do rodmod)
   //
   //  FASE 1 – dropa o item quebrado, salva posição e nome
   //  FASE 2 – checa kit de reparo no inventário
@@ -24961,7 +24964,7 @@ dsk.on('postLoop', () => {
 // 5. Digite /crystal no chat para ativar/desativar
 
 // ══════════════════════════════════════════════════════════════
-//  EGG BOT  –  integrado ao modpablo  (Personal Gate)
+//  EGG BOT  –  integrado ao rodmod  (Personal Gate)
 //  /egg  → ativa/desativa o bot
 //  /egb  → mostra/esconde o botão na tela
 //  corredorX capturado automaticamente ao ligar
@@ -25425,7 +25428,7 @@ dsk.on('postLoop', () => {
 
 
 dsk.once('postPacket:accepted', () => {
-  dsk.localMsg('Pablo Mod Load, type /cmd for commands', 'pink');
+  dsk.localMsg('RodMod Load, type /cmd for commands', 'pink');
 });
 
 
