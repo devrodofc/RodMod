@@ -25,3 +25,7 @@ tmp/
 pabloob-clean.js
 mystera-clean.js
 android/decoded/original/META-INF/
+
+# Backups locais
+*.bak
+*.bak-*
