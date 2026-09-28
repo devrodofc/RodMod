@@ -1,4 +1,6 @@
 document.addEventListener("deviceready", function () {
+    const TEST_WITHOUT_RODMOD = true;
+
     const status = document.getElementById("status");
 
     status.textContent = "Abrindo Mystera...";
@@ -26,6 +28,14 @@ document.addEventListener("deviceready", function () {
             },
             function (result) {
                 if (result && result[0]) {
+                    if (TEST_WITHOUT_RODMOD) {
+                        console.log("[RodMod iOS] TESTE: abrindo Mystera sem injetar RodMod");
+                        status.textContent = "Abrindo Mystera sem RodMod...";
+                        finished = true;
+                        browser.show();
+                        return;
+                    }
+
                     status.textContent = "Carregando RodMod...";
 
                     browser.executeScript(
