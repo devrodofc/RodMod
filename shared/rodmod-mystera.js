@@ -14337,6 +14337,31 @@ dsk.setCmd('/dropar', async (context) => {
     dsk.localMsg(`Dropar: ${amount} item(s) concluido!`, '#5f5');
 });
 
+//pegar item
+
+dsk.setCmd('/pick', async (arg) => {
+    if (!myself || game_state !== 2) {
+        dsk.localMsg('Pick: você precisa estar no jogo.', '#f55');
+        return;
+    }
+
+    let quantidade = parseInt(arg);
+
+    if (isNaN(quantidade) || quantidade <= 0) {
+        quantidade = 20;
+    }
+
+    quantidade = Math.min(quantidade, 100);
+
+    dsk.localMsg('Pick: recolhendo itens...', '#0ff');
+
+    for (let i = 0; i < quantidade; i++) {
+        await xDoPickUp();
+    }
+
+    dsk.localMsg('Pick: concluído!', '#5f5');
+});
+
 
 //zoom
 
@@ -19001,6 +19026,176 @@ dsk.setCmd('/spd', () => {
     botaoSpeedBtnVisible = !botaoSpeedBtnVisible;
     jv.botaoSpeed.visible = botaoSpeedBtnVisible;
     dsk.localMsg(`Speed Button: ${botaoSpeedBtnVisible ? 'Visível' : 'Escondido'}`, botaoSpeedBtnVisible ? '#5f5' : '#f55');
+});
+
+var botaoPickVisible = false;
+
+jv.botaoPick = jv.Button.create(688, 382, 20, 'PK', ui_container, 20);
+jv.botaoPick.title.style.fill = 0xff4444;
+jv.botaoPick.visible = false;
+
+jv.botaoPick.on_click = async function () {
+    jv.botaoPick.title.style.fill = 0x00ff88;
+
+    await dsk.commands['/pick']();
+
+    jv.botaoPick.title.style.fill = 0xff4444;
+};
+
+dsk.setCmd('/pk', () => {
+    botaoPickVisible = !botaoPickVisible;
+    jv.botaoPick.visible = botaoPickVisible;
+
+    dsk.localMsg(
+        `Pick Button: ${botaoPickVisible ? 'Visível' : 'Escondido'}`,
+        botaoPickVisible ? '#5f5' : '#f55'
+    );
+});
+
+var botaoDropVisible = false;
+var dropPanel = null;
+
+function closeDropPanel() {
+    if (dropPanel) {
+        dropPanel.remove();
+        dropPanel = null;
+    }
+}
+
+function openDropPanel() {
+    if (dropPanel) {
+        closeDropPanel();
+        return;
+    }
+
+    dropPanel = document.createElement('div');
+    dropPanel.id = 'rodmod-drop-panel';
+
+    Object.assign(dropPanel.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '260px',
+        padding: '14px',
+        background: 'rgba(20, 20, 25, 0.96)',
+        border: '2px solid #00ff88',
+        borderRadius: '10px',
+        zIndex: '999999',
+        fontFamily: 'Verdana, sans-serif',
+        boxShadow: '0 0 18px rgba(0, 0, 0, 0.7)',
+        userSelect: 'none'
+    });
+
+    const header = document.createElement('div');
+
+    Object.assign(header.style, {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '14px'
+    });
+
+    const title = document.createElement('span');
+    title.textContent = 'Drop';
+
+    Object.assign(title.style, {
+        color: '#00ff88',
+        fontWeight: 'bold',
+        fontSize: '18px'
+    });
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+
+    Object.assign(closeButton.style, {
+        background: 'transparent',
+        border: 'none',
+        color: '#ff5555',
+        fontSize: '18px',
+        cursor: 'pointer'
+    });
+
+    closeButton.onclick = closeDropPanel;
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    const buttonsContainer = document.createElement('div');
+
+    Object.assign(buttonsContainer.style, {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '10px'
+    });
+
+    const amounts = [15, 30, 45, 60, 75];
+
+    amounts.forEach(amount => {
+        const button = document.createElement('button');
+
+        button.textContent = String(amount);
+
+        Object.assign(button.style, {
+            padding: '12px 5px',
+            background: '#25252c',
+            border: '1px solid #00ff88',
+            borderRadius: '6px',
+            color: '#ffffff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+        });
+
+        button.onmouseenter = () => {
+            button.style.background = '#00aa66';
+        };
+
+        button.onmouseleave = () => {
+            button.style.background = '#25252c';
+        };
+
+        button.onclick = async () => {
+            closeDropPanel();
+
+            if (dsk.commands['/dropar']) {
+                await dsk.commands['/dropar'](String(amount));
+            }
+        };
+
+        buttonsContainer.appendChild(button);
+    });
+
+    dropPanel.appendChild(header);
+    dropPanel.appendChild(buttonsContainer);
+
+    document.body.appendChild(dropPanel);
+}
+
+
+// botão flutuante DR
+jv.botaoDrop = jv.Button.create(663, 382, 20, 'DR', ui_container, 20);
+jv.botaoDrop.title.style.fill = 0xff4444;
+jv.botaoDrop.visible = false;
+
+jv.botaoDrop.on_click = function () {
+    openDropPanel();
+};
+
+
+// mostra/esconde o botão DR
+dsk.setCmd('/dr', () => {
+    botaoDropVisible = !botaoDropVisible;
+    jv.botaoDrop.visible = botaoDropVisible;
+
+    if (!botaoDropVisible) {
+        closeDropPanel();
+    }
+
+    dsk.localMsg(
+        `Drop Button: ${botaoDropVisible ? 'Visível' : 'Escondido'}`,
+        botaoDropVisible ? '#5f5' : '#f55'
+    );
 });
 
 // ── BOTÃO FLUTUANTE HUB ───────────────────────────────────────
