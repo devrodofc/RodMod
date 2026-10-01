@@ -1497,6 +1497,15 @@ dsk.on('postPacket:pkg', packet => {
 //funções novas//
 
 
+function xIsB3HazardObject(obj) {
+  if (!obj) return false;
+
+  return obj.name === 'Stairs Up' ||
+         obj.name === 'Hole' ||
+         obj.name === 'Stairway';
+}
+
+
 async function xDoMove(ex, wy) {
     if (xMovingNow)
         return;
@@ -1715,6 +1724,25 @@ async function xCheck(ex, wy) {
                         }
                     }
                 }
+            }
+        }
+    }
+
+    // ── Perigos específicos do Deep Cave B3 ──────────────────────
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+        for (const obj of objects.items) {
+            if (!xIsB3HazardObject(obj)) continue;
+
+            const localX = obj.x - xSolidsPosCH[0];
+            const localY = obj.y - xSolidsPosCH[1];
+
+            if (
+                localX > 0 &&
+                localX < 46 &&
+                localY > 0 &&
+                localY < 16
+            ) {
+                xSolidsCH[localX][localY] = 'B3 Hazard: ' + obj.name;
             }
         }
     }
@@ -2186,6 +2214,21 @@ async function xDoMoveMaker() {
 }
 function xGetSolidByID(ex, wy) {
     xTemp[14] = undefined;
+
+
+    // ── Proteção B3 contra buracos e escadas ──
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+        for (const obj of objects.items) {
+            if (
+                obj &&
+                obj.x === ex &&
+                obj.y === wy &&
+                xIsB3HazardObject(obj)
+            ) {
+                return obj;
+            }
+        }
+    }
     for (i in objects.items) {
         if (objects.items[i] != undefined) {
             if (objects.items[i].can_pickup == 0) {
@@ -15137,6 +15180,7 @@ dsk.setCmd('/baserepair', () => {
 
 dsk.explo = {
   enabled: false,
+  mode: 'galebrook',
   wpIndex: 0,
   waypoints: [
     { x: 465, y: 363 }, { x: 465, y: 190 }, { x: 455, y: 190 }, { x: 455, y: 363 },
