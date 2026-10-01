@@ -14396,6 +14396,11 @@ dsk.setCmd('/zoom', () => {
     static_container.position.x = -380 * (xZoom - 1);
     static_container.position.y = -230 * (xZoom - 1);
     
+    // Atualiza a cor do botão ZM, caso ele já exista
+    if (jv.botaoZoom && jv.botaoZoom.title && jv.botaoZoom.title.style) {
+        jv.botaoZoom.title.style.fill = dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
+    }
+
     dsk.localMsg(`Zoom: ${dsk.zoom.enabled ? '1.5x (ativado)' : '1.0x (desativado)'}`, dsk.zoom.enabled ? '#5f5' : '#f55');
 });
 
@@ -18959,36 +18964,26 @@ dsk.setCmd('/mine', (args) => {
 })();
 
 
-var autoSpeedHack = false;
-var speedHackInterval2 = null;
-var botaoSpeedVisible = false;
+var botaoZoomVisible = false;
 
 
-jv.botaoMenu2 = jv.Button.create(718, 360, 20, 'SP', ui_container, 20);
-jv.botaoMenu2.title.style.fill = 0xff4444;
-jv.botaoMenu2.visible = false; // ← começa escondido
+jv.botaoZoom = jv.Button.create(718, 360, 20, 'ZM', ui_container, 20);
+jv.botaoZoom.title.style.fill = dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
+jv.botaoZoom.visible = false; // ← começa escondido
 
 
-jv.botaoMenu2.on_click = function () {
-    if (!autoSpeedHack) {
-        autoSpeedHack = true;
-        speedHackInterval2 = setInterval(() => {
-            myself.cur_speed = 130;
-            last_dest = 9e10;
-        }, 5);
-    } else {
-        autoSpeedHack = false;
-        clearInterval(speedHackInterval2);
-        speedHackInterval2 = null;
-    }
-    jv.botaoMenu2.title.style.fill = autoSpeedHack ? 0x00ff88 : 0xff4444;
+jv.botaoZoom.on_click = function () {
+    dsk.commands['/zoom']();
 };
 
 
 dsk.setCmd('/sp', () => {
-    botaoSpeedVisible = !botaoSpeedVisible;
-    jv.botaoMenu2.visible = botaoSpeedVisible;
-    dsk.localMsg(`Speed Button: ${botaoSpeedVisible ? 'Visível' : 'Escondido'}`, botaoSpeedVisible ? '#5f5' : '#f55');
+    botaoZoomVisible = !botaoZoomVisible;
+    jv.botaoZoom.visible = botaoZoomVisible;
+    dsk.localMsg(
+        `Zoom Button: ${botaoZoomVisible ? 'Visível' : 'Escondido'}`,
+        botaoZoomVisible ? '#5f5' : '#f55'
+    );
 });
 
 var botaoFollowVisible = false;
