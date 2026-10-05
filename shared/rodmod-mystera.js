@@ -1506,6 +1506,16 @@ function xIsB3HazardObject(obj) {
 }
 
 
+// Parede indestrutível do Deep Cave B3.
+// Confirmado em jogo:
+// chão   -> template "19"
+// parede -> template "112"
+function xIsB3MapWall(x, y) {
+  const tile = map_index?.[getkey(x, y)];
+  return tile?.template === '112';
+}
+
+
 async function xDoMove(ex, wy) {
     if (xMovingNow)
         return;
@@ -1575,11 +1585,51 @@ async function xDoMove(ex, wy) {
             }
         }
     }
+    // ── Perigos específicos do Deep Cave B3 ──────────────────────
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Buracos e escadas
+        for (const obj of objects.items) {
+            if (!xIsB3HazardObject(obj)) continue;
+
+            const localX = obj.x - xSolidsPos[0];
+            const localY = obj.y - xSolidsPos[1];
+
+            if (
+                localX > 0 &&
+                localX < 46 &&
+                localY > 0 &&
+                localY < 16
+            ) {
+                xSolids[localX][localY] = 'B3 Hazard: ' + obj.name;
+            }
+        }
+
+    }
+
         // ── Paredes do mapa ──────────────────────────────────────────
         for (j = 0; j < 46; j++) {
                 for (k = 0; k < 16; k++) {
                         if (xSolids[j][k] !== undefined) continue; // já marcado
-                        const wall = xGetWallByPos((j + xSolidsPos[0]), (k + xSolidsPos[1]));
+
+                        const globalX = j + xSolidsPos[0];
+                        const globalY = k + xSolidsPos[1];
+
+                        // Deep Cave B3: paredes fixas não aparecem como
+                        // objects.items bloqueantes. No mapa elas usam
+                        // template "112".
+                        if (
+                                dsk.explo &&
+                                dsk.explo.enabled &&
+                                dsk.explo.mode === 'b3' &&
+                                xIsB3MapWall(globalX, globalY)
+                        ) {
+                                xSolids[j][k] = 'B3 Map Wall';
+                                continue;
+                        }
+
+                        const wall = xGetWallByPos(globalX, globalY);
+
                         if (wall && wall.can_block === 1) {
                                 xSolids[j][k] = wall.name;
                         }
@@ -1730,6 +1780,8 @@ async function xCheck(ex, wy) {
 
     // ── Perigos específicos do Deep Cave B3 ──────────────────────
     if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Buracos e escadas
         for (const obj of objects.items) {
             if (!xIsB3HazardObject(obj)) continue;
 
@@ -1745,12 +1797,29 @@ async function xCheck(ex, wy) {
                 xSolidsCH[localX][localY] = 'B3 Hazard: ' + obj.name;
             }
         }
+
     }
         // ── Paredes do mapa ──────────────────────────────────────────
         for (j = 0; j < 46; j++) {
                 for (k = 0; k < 16; k++) {
                         if (xSolidsCH[j][k] !== undefined) continue; // já marcado
-                        const wall = xGetWallByPos((j + xSolidsPosCH[0]), (k + xSolidsPosCH[1]));
+
+                        const globalX = j + xSolidsPosCH[0];
+                        const globalY = k + xSolidsPosCH[1];
+
+                        // Deep Cave B3: parede fixa = template "112".
+                        if (
+                                dsk.explo &&
+                                dsk.explo.enabled &&
+                                dsk.explo.mode === 'b3' &&
+                                xIsB3MapWall(globalX, globalY)
+                        ) {
+                                xSolidsCH[j][k] = 'B3 Map Wall';
+                                continue;
+                        }
+
+                        const wall = xGetWallByPos(globalX, globalY);
+
                         if (wall && wall.can_block === 1) {
                                 xSolidsCH[j][k] = wall.name;
                         }
@@ -2216,8 +2285,19 @@ function xGetSolidByID(ex, wy) {
     xTemp[14] = undefined;
 
 
-    // ── Proteção B3 contra buracos e escadas ──
+    // ── Proteção B3 contra paredes fixas, buracos e escadas ──
     if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Parede indestrutível do mapa do B3.
+        if (xIsB3MapWall(ex, wy)) {
+            return {
+                name: 'B3 Map Wall',
+                x: ex,
+                y: wy
+            };
+        }
+
+        // Buracos e escadas.
         for (const obj of objects.items) {
             if (
                 obj &&
@@ -15185,7 +15265,7 @@ dsk.setCmd('/baserepair', () => {
 
 dsk.explo = {
   enabled: false,
-  mode: 'galebrook',
+  mode: 'b3',
   wpIndex: 0,
   waypoints: [
     { x: 465, y: 363 }, { x: 465, y: 190 }, { x: 455, y: 190 }, { x: 455, y: 363 },
@@ -15201,6 +15281,10 @@ dsk.explo = {
   ],
 };
 
+
+
+// ── DEBUG DEEP CAVE B3 ────────────────────────────────────────
+// Apenas coleta informações. Não altera movimento nem Auto Explo.
 
 async function xExplo() {
   if (dskPaused) return;
