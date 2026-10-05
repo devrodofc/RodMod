@@ -1497,6 +1497,25 @@ dsk.on('postPacket:pkg', packet => {
 //funções novas//
 
 
+function xIsB3HazardObject(obj) {
+  if (!obj) return false;
+
+  return obj.name === 'Stairs Up' ||
+         obj.name === 'Hole' ||
+         obj.name === 'Stairway';
+}
+
+
+// Parede indestrutível do Deep Cave B3.
+// Confirmado em jogo:
+// chão   -> template "19"
+// parede -> template "112"
+function xIsB3MapWall(x, y) {
+  const tile = map_index?.[getkey(x, y)];
+  return tile?.template === '112';
+}
+
+
 async function xDoMove(ex, wy) {
     if (xMovingNow)
         return;
@@ -1566,11 +1585,51 @@ async function xDoMove(ex, wy) {
             }
         }
     }
+    // ── Perigos específicos do Deep Cave B3 ──────────────────────
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Buracos e escadas
+        for (const obj of objects.items) {
+            if (!xIsB3HazardObject(obj)) continue;
+
+            const localX = obj.x - xSolidsPos[0];
+            const localY = obj.y - xSolidsPos[1];
+
+            if (
+                localX > 0 &&
+                localX < 46 &&
+                localY > 0 &&
+                localY < 16
+            ) {
+                xSolids[localX][localY] = 'B3 Hazard: ' + obj.name;
+            }
+        }
+
+    }
+
         // ── Paredes do mapa ──────────────────────────────────────────
         for (j = 0; j < 46; j++) {
                 for (k = 0; k < 16; k++) {
                         if (xSolids[j][k] !== undefined) continue; // já marcado
-                        const wall = xGetWallByPos((j + xSolidsPos[0]), (k + xSolidsPos[1]));
+
+                        const globalX = j + xSolidsPos[0];
+                        const globalY = k + xSolidsPos[1];
+
+                        // Deep Cave B3: paredes fixas não aparecem como
+                        // objects.items bloqueantes. No mapa elas usam
+                        // template "112".
+                        if (
+                                dsk.explo &&
+                                dsk.explo.enabled &&
+                                dsk.explo.mode === 'b3' &&
+                                xIsB3MapWall(globalX, globalY)
+                        ) {
+                                xSolids[j][k] = 'B3 Map Wall';
+                                continue;
+                        }
+
+                        const wall = xGetWallByPos(globalX, globalY);
+
                         if (wall && wall.can_block === 1) {
                                 xSolids[j][k] = wall.name;
                         }
@@ -1718,11 +1777,49 @@ async function xCheck(ex, wy) {
             }
         }
     }
+
+    // ── Perigos específicos do Deep Cave B3 ──────────────────────
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Buracos e escadas
+        for (const obj of objects.items) {
+            if (!xIsB3HazardObject(obj)) continue;
+
+            const localX = obj.x - xSolidsPosCH[0];
+            const localY = obj.y - xSolidsPosCH[1];
+
+            if (
+                localX > 0 &&
+                localX < 46 &&
+                localY > 0 &&
+                localY < 16
+            ) {
+                xSolidsCH[localX][localY] = 'B3 Hazard: ' + obj.name;
+            }
+        }
+
+    }
         // ── Paredes do mapa ──────────────────────────────────────────
         for (j = 0; j < 46; j++) {
                 for (k = 0; k < 16; k++) {
                         if (xSolidsCH[j][k] !== undefined) continue; // já marcado
-                        const wall = xGetWallByPos((j + xSolidsPosCH[0]), (k + xSolidsPosCH[1]));
+
+                        const globalX = j + xSolidsPosCH[0];
+                        const globalY = k + xSolidsPosCH[1];
+
+                        // Deep Cave B3: parede fixa = template "112".
+                        if (
+                                dsk.explo &&
+                                dsk.explo.enabled &&
+                                dsk.explo.mode === 'b3' &&
+                                xIsB3MapWall(globalX, globalY)
+                        ) {
+                                xSolidsCH[j][k] = 'B3 Map Wall';
+                                continue;
+                        }
+
+                        const wall = xGetWallByPos(globalX, globalY);
+
                         if (wall && wall.can_block === 1) {
                                 xSolidsCH[j][k] = wall.name;
                         }
@@ -2186,6 +2283,32 @@ async function xDoMoveMaker() {
 }
 function xGetSolidByID(ex, wy) {
     xTemp[14] = undefined;
+
+
+    // ── Proteção B3 contra paredes fixas, buracos e escadas ──
+    if (dsk.explo && dsk.explo.enabled && dsk.explo.mode === 'b3') {
+
+        // Parede indestrutível do mapa do B3.
+        if (xIsB3MapWall(ex, wy)) {
+            return {
+                name: 'B3 Map Wall',
+                x: ex,
+                y: wy
+            };
+        }
+
+        // Buracos e escadas.
+        for (const obj of objects.items) {
+            if (
+                obj &&
+                obj.x === ex &&
+                obj.y === wy &&
+                xIsB3HazardObject(obj)
+            ) {
+                return obj;
+            }
+        }
+    }
     for (i in objects.items) {
         if (objects.items[i] != undefined) {
             if (objects.items[i].can_pickup == 0) {
@@ -14337,22 +14460,60 @@ dsk.setCmd('/dropar', async (context) => {
     dsk.localMsg(`Dropar: ${amount} item(s) concluido!`, '#5f5');
 });
 
+//pegar item
+
+dsk.setCmd('/pick', async (arg) => {
+    if (!myself || game_state !== 2) {
+        dsk.localMsg('Pick: você precisa estar no jogo.', '#f55');
+        return;
+    }
+
+    let quantidade = parseInt(arg);
+
+    if (isNaN(quantidade) || quantidade <= 0) {
+        quantidade = 20;
+    }
+
+    quantidade = Math.min(quantidade, 100);
+
+    dsk.localMsg('Pick: recolhendo itens...', '#0ff');
+
+    for (let i = 0; i < quantidade; i++) {
+        await xDoPickUp();
+    }
+
+    dsk.localMsg('Pick: concluído!', '#5f5');
+});
+
 
 //zoom
 
 
-dsk.zoom = { enabled: false };
+dsk.zoom = {
+    enabled: false,
+    value: 1.0
+};
 
 
-dsk.setCmd('/zoom', () => {
-    dsk.zoom.enabled = !dsk.zoom.enabled;
-    
-    const xZoom = dsk.zoom.enabled ? 1.5 : 1.0;
+var zoomPanel = null;
 
+
+function closeZoomPanel() {
+    if (zoomPanel) {
+        zoomPanel.remove();
+        zoomPanel = null;
+    }
+}
+
+
+function applyRodModZoom(xZoom) {
     // Pega o sprite correto independente da conta
     const rootSprite = myself.body_sprite ?? myself.spr;
     const world = rootSprite.parent.parent.parent;
-    
+
+    dsk.zoom.value = xZoom;
+    dsk.zoom.enabled = xZoom !== 1.0;
+
     // Escala o mundo do jogo
     world.scale.x = (1 / xZoom);
     world.scale.y = (1 / xZoom);
@@ -14370,8 +14531,145 @@ dsk.setCmd('/zoom', () => {
     static_container.scale.y = xZoom;
     static_container.position.x = -380 * (xZoom - 1);
     static_container.position.y = -230 * (xZoom - 1);
-    
-    dsk.localMsg(`Zoom: ${dsk.zoom.enabled ? '1.5x (ativado)' : '1.0x (desativado)'}`, dsk.zoom.enabled ? '#5f5' : '#f55');
+
+    // Atualiza cor do botão ZM
+    if (
+        jv.botaoZoom &&
+        jv.botaoZoom.title &&
+        jv.botaoZoom.title.style
+    ) {
+        jv.botaoZoom.title.style.fill =
+            dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
+    }
+
+    dsk.localMsg(
+        `Zoom: ${xZoom.toFixed(1)}x ${
+            dsk.zoom.enabled ? '(ativado)' : '(desativado)'
+        }`,
+        dsk.zoom.enabled ? '#5f5' : '#f55'
+    );
+}
+
+
+function openZoomPanel() {
+    if (zoomPanel) {
+        closeZoomPanel();
+        return;
+    }
+
+    zoomPanel = document.createElement('div');
+    zoomPanel.id = 'rodmod-zoom-panel';
+
+    Object.assign(zoomPanel.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '260px',
+        padding: '14px',
+        background: 'rgba(20, 20, 25, 0.96)',
+        border: '2px solid #00ff88',
+        borderRadius: '10px',
+        zIndex: '999999',
+        fontFamily: 'Verdana, sans-serif',
+        boxShadow: '0 0 18px rgba(0, 0, 0, 0.7)',
+        userSelect: 'none'
+    });
+
+    const header = document.createElement('div');
+
+    Object.assign(header.style, {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '14px'
+    });
+
+    const title = document.createElement('span');
+    title.textContent = 'Zoom';
+
+    Object.assign(title.style, {
+        color: '#00ff88',
+        fontWeight: 'bold',
+        fontSize: '18px'
+    });
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+
+    Object.assign(closeButton.style, {
+        background: 'transparent',
+        border: 'none',
+        color: '#ff5555',
+        fontSize: '18px',
+        cursor: 'pointer'
+    });
+
+    closeButton.onclick = closeZoomPanel;
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    const buttonsContainer = document.createElement('div');
+
+    Object.assign(buttonsContainer.style, {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '10px'
+    });
+
+    const zoomLevels = [1.1, 1.2, 1.3, 1.4, 1.5];
+
+    zoomLevels.forEach(level => {
+        const button = document.createElement('button');
+
+        button.textContent = `${level.toFixed(1)}x`;
+
+        Object.assign(button.style, {
+            padding: '12px 5px',
+            background: '#25252c',
+            border: '1px solid #00ff88',
+            borderRadius: '6px',
+            color: '#ffffff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+        });
+
+        button.onmouseenter = () => {
+            button.style.background = '#00aa66';
+        };
+
+        button.onmouseleave = () => {
+            button.style.background = '#25252c';
+        };
+
+        button.onclick = () => {
+            closeZoomPanel();
+            applyRodModZoom(level);
+        };
+
+        buttonsContainer.appendChild(button);
+    });
+
+    zoomPanel.appendChild(header);
+    zoomPanel.appendChild(buttonsContainer);
+
+    document.body.appendChild(zoomPanel);
+}
+
+
+dsk.setCmd('/zoom', () => {
+    // Se já existe zoom ativo, segundo clique/comando
+    // sempre volta direto para 1.0x.
+    if (dsk.zoom.enabled) {
+        closeZoomPanel();
+        applyRodModZoom(1.0);
+        return;
+    }
+
+    // Em 1.0x, abre seletor.
+    openZoomPanel();
 });
 
 
@@ -15112,6 +15410,7 @@ dsk.setCmd('/baserepair', () => {
 
 dsk.explo = {
   enabled: false,
+  mode: 'b3',
   wpIndex: 0,
   waypoints: [
     { x: 465, y: 363 }, { x: 465, y: 190 }, { x: 455, y: 190 }, { x: 455, y: 363 },
@@ -15127,6 +15426,10 @@ dsk.explo = {
   ],
 };
 
+
+
+// ── DEBUG DEEP CAVE B3 ────────────────────────────────────────
+// Apenas coleta informações. Não altera movimento nem Auto Explo.
 
 async function xExplo() {
   if (dskPaused) return;
@@ -18934,36 +19237,26 @@ dsk.setCmd('/mine', (args) => {
 })();
 
 
-var autoSpeedHack = false;
-var speedHackInterval2 = null;
-var botaoSpeedVisible = false;
+var botaoZoomVisible = false;
 
 
-jv.botaoMenu2 = jv.Button.create(718, 360, 20, 'SP', ui_container, 20);
-jv.botaoMenu2.title.style.fill = 0xff4444;
-jv.botaoMenu2.visible = false; // ← começa escondido
+jv.botaoZoom = jv.Button.create(718, 360, 20, 'ZM', ui_container, 20);
+jv.botaoZoom.title.style.fill = dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
+jv.botaoZoom.visible = false; // ← começa escondido
 
 
-jv.botaoMenu2.on_click = function () {
-    if (!autoSpeedHack) {
-        autoSpeedHack = true;
-        speedHackInterval2 = setInterval(() => {
-            myself.cur_speed = 130;
-            last_dest = 9e10;
-        }, 5);
-    } else {
-        autoSpeedHack = false;
-        clearInterval(speedHackInterval2);
-        speedHackInterval2 = null;
-    }
-    jv.botaoMenu2.title.style.fill = autoSpeedHack ? 0x00ff88 : 0xff4444;
+jv.botaoZoom.on_click = function () {
+    dsk.commands['/zoom']();
 };
 
 
-dsk.setCmd('/sp', () => {
-    botaoSpeedVisible = !botaoSpeedVisible;
-    jv.botaoMenu2.visible = botaoSpeedVisible;
-    dsk.localMsg(`Speed Button: ${botaoSpeedVisible ? 'Visível' : 'Escondido'}`, botaoSpeedVisible ? '#5f5' : '#f55');
+dsk.setCmd('/zm', () => {
+    botaoZoomVisible = !botaoZoomVisible;
+    jv.botaoZoom.visible = botaoZoomVisible;
+    dsk.localMsg(
+        `Zoom Button: ${botaoZoomVisible ? 'Visível' : 'Escondido'}`,
+        botaoZoomVisible ? '#5f5' : '#f55'
+    );
 });
 
 var botaoFollowVisible = false;
@@ -19001,6 +19294,176 @@ dsk.setCmd('/spd', () => {
     botaoSpeedBtnVisible = !botaoSpeedBtnVisible;
     jv.botaoSpeed.visible = botaoSpeedBtnVisible;
     dsk.localMsg(`Speed Button: ${botaoSpeedBtnVisible ? 'Visível' : 'Escondido'}`, botaoSpeedBtnVisible ? '#5f5' : '#f55');
+});
+
+var botaoPickVisible = false;
+
+jv.botaoPick = jv.Button.create(688, 382, 20, 'PK', ui_container, 20);
+jv.botaoPick.title.style.fill = 0xff4444;
+jv.botaoPick.visible = false;
+
+jv.botaoPick.on_click = async function () {
+    jv.botaoPick.title.style.fill = 0x00ff88;
+
+    await dsk.commands['/pick']();
+
+    jv.botaoPick.title.style.fill = 0xff4444;
+};
+
+dsk.setCmd('/pk', () => {
+    botaoPickVisible = !botaoPickVisible;
+    jv.botaoPick.visible = botaoPickVisible;
+
+    dsk.localMsg(
+        `Pick Button: ${botaoPickVisible ? 'Visível' : 'Escondido'}`,
+        botaoPickVisible ? '#5f5' : '#f55'
+    );
+});
+
+var botaoDropVisible = false;
+var dropPanel = null;
+
+function closeDropPanel() {
+    if (dropPanel) {
+        dropPanel.remove();
+        dropPanel = null;
+    }
+}
+
+function openDropPanel() {
+    if (dropPanel) {
+        closeDropPanel();
+        return;
+    }
+
+    dropPanel = document.createElement('div');
+    dropPanel.id = 'rodmod-drop-panel';
+
+    Object.assign(dropPanel.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '260px',
+        padding: '14px',
+        background: 'rgba(20, 20, 25, 0.96)',
+        border: '2px solid #00ff88',
+        borderRadius: '10px',
+        zIndex: '999999',
+        fontFamily: 'Verdana, sans-serif',
+        boxShadow: '0 0 18px rgba(0, 0, 0, 0.7)',
+        userSelect: 'none'
+    });
+
+    const header = document.createElement('div');
+
+    Object.assign(header.style, {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '14px'
+    });
+
+    const title = document.createElement('span');
+    title.textContent = 'Drop';
+
+    Object.assign(title.style, {
+        color: '#00ff88',
+        fontWeight: 'bold',
+        fontSize: '18px'
+    });
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+
+    Object.assign(closeButton.style, {
+        background: 'transparent',
+        border: 'none',
+        color: '#ff5555',
+        fontSize: '18px',
+        cursor: 'pointer'
+    });
+
+    closeButton.onclick = closeDropPanel;
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    const buttonsContainer = document.createElement('div');
+
+    Object.assign(buttonsContainer.style, {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '10px'
+    });
+
+    const amounts = [15, 30, 45, 60, 75];
+
+    amounts.forEach(amount => {
+        const button = document.createElement('button');
+
+        button.textContent = String(amount);
+
+        Object.assign(button.style, {
+            padding: '12px 5px',
+            background: '#25252c',
+            border: '1px solid #00ff88',
+            borderRadius: '6px',
+            color: '#ffffff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+        });
+
+        button.onmouseenter = () => {
+            button.style.background = '#00aa66';
+        };
+
+        button.onmouseleave = () => {
+            button.style.background = '#25252c';
+        };
+
+        button.onclick = async () => {
+            closeDropPanel();
+
+            if (dsk.commands['/dropar']) {
+                await dsk.commands['/dropar'](String(amount));
+            }
+        };
+
+        buttonsContainer.appendChild(button);
+    });
+
+    dropPanel.appendChild(header);
+    dropPanel.appendChild(buttonsContainer);
+
+    document.body.appendChild(dropPanel);
+}
+
+
+// botão flutuante DR
+jv.botaoDrop = jv.Button.create(663, 382, 20, 'DR', ui_container, 20);
+jv.botaoDrop.title.style.fill = 0xff4444;
+jv.botaoDrop.visible = false;
+
+jv.botaoDrop.on_click = function () {
+    openDropPanel();
+};
+
+
+// mostra/esconde o botão DR
+dsk.setCmd('/dr', () => {
+    botaoDropVisible = !botaoDropVisible;
+    jv.botaoDrop.visible = botaoDropVisible;
+
+    if (!botaoDropVisible) {
+        closeDropPanel();
+    }
+
+    dsk.localMsg(
+        `Drop Button: ${botaoDropVisible ? 'Visível' : 'Escondido'}`,
+        botaoDropVisible ? '#5f5' : '#f55'
+    );
 });
 
 // ── BOTÃO FLUTUANTE HUB ───────────────────────────────────────
