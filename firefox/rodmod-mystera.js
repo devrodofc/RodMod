@@ -14489,18 +14489,31 @@ dsk.setCmd('/pick', async (arg) => {
 //zoom
 
 
-dsk.zoom = { enabled: false };
+dsk.zoom = {
+    enabled: false,
+    value: 1.0
+};
 
 
-dsk.setCmd('/zoom', () => {
-    dsk.zoom.enabled = !dsk.zoom.enabled;
-    
-    const xZoom = dsk.zoom.enabled ? 1.5 : 1.0;
+var zoomPanel = null;
 
+
+function closeZoomPanel() {
+    if (zoomPanel) {
+        zoomPanel.remove();
+        zoomPanel = null;
+    }
+}
+
+
+function applyRodModZoom(xZoom) {
     // Pega o sprite correto independente da conta
     const rootSprite = myself.body_sprite ?? myself.spr;
     const world = rootSprite.parent.parent.parent;
-    
+
+    dsk.zoom.value = xZoom;
+    dsk.zoom.enabled = xZoom !== 1.0;
+
     // Escala o mundo do jogo
     world.scale.x = (1 / xZoom);
     world.scale.y = (1 / xZoom);
@@ -14518,13 +14531,145 @@ dsk.setCmd('/zoom', () => {
     static_container.scale.y = xZoom;
     static_container.position.x = -380 * (xZoom - 1);
     static_container.position.y = -230 * (xZoom - 1);
-    
-    // Atualiza a cor do botão ZM, caso ele já exista
-    if (jv.botaoZoom && jv.botaoZoom.title && jv.botaoZoom.title.style) {
-        jv.botaoZoom.title.style.fill = dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
+
+    // Atualiza cor do botão ZM
+    if (
+        jv.botaoZoom &&
+        jv.botaoZoom.title &&
+        jv.botaoZoom.title.style
+    ) {
+        jv.botaoZoom.title.style.fill =
+            dsk.zoom.enabled ? 0x00ff88 : 0xff4444;
     }
 
-    dsk.localMsg(`Zoom: ${dsk.zoom.enabled ? '1.5x (ativado)' : '1.0x (desativado)'}`, dsk.zoom.enabled ? '#5f5' : '#f55');
+    dsk.localMsg(
+        `Zoom: ${xZoom.toFixed(1)}x ${
+            dsk.zoom.enabled ? '(ativado)' : '(desativado)'
+        }`,
+        dsk.zoom.enabled ? '#5f5' : '#f55'
+    );
+}
+
+
+function openZoomPanel() {
+    if (zoomPanel) {
+        closeZoomPanel();
+        return;
+    }
+
+    zoomPanel = document.createElement('div');
+    zoomPanel.id = 'rodmod-zoom-panel';
+
+    Object.assign(zoomPanel.style, {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '260px',
+        padding: '14px',
+        background: 'rgba(20, 20, 25, 0.96)',
+        border: '2px solid #00ff88',
+        borderRadius: '10px',
+        zIndex: '999999',
+        fontFamily: 'Verdana, sans-serif',
+        boxShadow: '0 0 18px rgba(0, 0, 0, 0.7)',
+        userSelect: 'none'
+    });
+
+    const header = document.createElement('div');
+
+    Object.assign(header.style, {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '14px'
+    });
+
+    const title = document.createElement('span');
+    title.textContent = 'Zoom';
+
+    Object.assign(title.style, {
+        color: '#00ff88',
+        fontWeight: 'bold',
+        fontSize: '18px'
+    });
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = '✕';
+
+    Object.assign(closeButton.style, {
+        background: 'transparent',
+        border: 'none',
+        color: '#ff5555',
+        fontSize: '18px',
+        cursor: 'pointer'
+    });
+
+    closeButton.onclick = closeZoomPanel;
+
+    header.appendChild(title);
+    header.appendChild(closeButton);
+
+    const buttonsContainer = document.createElement('div');
+
+    Object.assign(buttonsContainer.style, {
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '10px'
+    });
+
+    const zoomLevels = [1.1, 1.2, 1.3, 1.4, 1.5];
+
+    zoomLevels.forEach(level => {
+        const button = document.createElement('button');
+
+        button.textContent = `${level.toFixed(1)}x`;
+
+        Object.assign(button.style, {
+            padding: '12px 5px',
+            background: '#25252c',
+            border: '1px solid #00ff88',
+            borderRadius: '6px',
+            color: '#ffffff',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            cursor: 'pointer'
+        });
+
+        button.onmouseenter = () => {
+            button.style.background = '#00aa66';
+        };
+
+        button.onmouseleave = () => {
+            button.style.background = '#25252c';
+        };
+
+        button.onclick = () => {
+            closeZoomPanel();
+            applyRodModZoom(level);
+        };
+
+        buttonsContainer.appendChild(button);
+    });
+
+    zoomPanel.appendChild(header);
+    zoomPanel.appendChild(buttonsContainer);
+
+    document.body.appendChild(zoomPanel);
+}
+
+
+dsk.setCmd('/zoom', () => {
+    // Se já existe zoom ativo, segundo clique/comando
+    // sempre volta direto para 1.0x.
+    if (dsk.zoom.enabled) {
+        closeZoomPanel();
+        applyRodModZoom(1.0);
+        return;
+    }
+
+    // Em 1.0x, abre seletor.
+    openZoomPanel();
 });
 
 
@@ -19105,7 +19250,7 @@ jv.botaoZoom.on_click = function () {
 };
 
 
-dsk.setCmd('/sp', () => {
+dsk.setCmd('/zm', () => {
     botaoZoomVisible = !botaoZoomVisible;
     jv.botaoZoom.visible = botaoZoomVisible;
     dsk.localMsg(
