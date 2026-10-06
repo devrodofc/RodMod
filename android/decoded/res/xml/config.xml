@@ -22,7 +22,7 @@
     <android:feature name="InAppBrowser">
         <android:param name="android-package" value="org.apache.cordova.inappbrowser.InAppBrowser" />
     </android:feature>
-    <android:name>Pablo Mod</android:name>
+    <android:name>RodMod</android:name>
     <android:description />
     <android:author email="jvhdevelopment@gmail.com" href="http://www.mysteralegacy.com" />
     <android:edit-config file="AndroidManifest.xml" mode="merge" target="/manifest/application/activity">

@@ -5199,61 +5199,62 @@ const RODMOD_MENU_SECTIONS = [
   ]},
 
   { label: '⛏️  Recursos', items: [
-    { label: '⛏️ Mine Hub',        state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
-    { label: '🐺 WC Mining',       state: () => !!dsk.wcmining?.enabled,       toggle: () => dsk.commands['/wcmining']() },
-    { label: '💎 Crystal Rock',    state: () => !!dsk.crystal?.enabled,        toggle: () => dsk.commands['/crystal']() },
-    { label: '🌲 Wood Farm',       state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
-    { label: '🪨 Recursos Bot',    state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
-    { label: '🪏 Clay Bot',        state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/claypanel']() },
-    { label: '🌲 Forest Bot',      state: () => !!dsk.forest?.enabled,         toggle: () => dsk.commands['/forestconfig']() },
-    { label: '🐑 Sheep Bot',       state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
-    { label: '🌿 Aloe Bot',        state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
-    { label: '🐔 Galinha Bot',     state: () => !!dsk.gal?.enabled,            toggle: () => dsk.commands['/galconfig']() },
-    { label: '🖌️ Tinta',           state: () => !!dsk.tinta?.enabled,          toggle: () => dsk.commands['/tinta']() },
+    { label: '⛏️ Mine Hub',           state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
+    { label: '🐺 WC Mining',          state: () => !!dsk.wcmining?.enabled,       toggle: () => dsk.commands['/wcmining']() },
+    { label: '💎 Crystal Rock',       state: () => !!dsk.crystal?.enabled,        toggle: () => dsk.commands['/crystal']() },
+    { label: '🌲 Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
+    { label: '🪨 Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
+    { label: '🪏 Clay Bot',           state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/claypanel']() },
+    { label: '🌲 Forest Bot',         state: () => !!dsk.forest?.enabled,         toggle: () => dsk.commands['/forestconfig']() },
+    { label: '🐑 Sheep Bot',          state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
+    { label: '🌿 Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
+    { label: '🐔 Galinha Bot',        state: () => !!dsk.gal?.enabled,            toggle: () => dsk.commands['/galconfig']() },
+    { label: '🖌️ Tinta',              state: () => !!dsk.tinta?.enabled,          toggle: () => dsk.commands['/tinta']() },
   ]},
 
   { label: '🗡️  Hunt', items: [
+    { label: '🕳️ UW',                 state: () => !!(typeof uwPresetEnabled !== 'undefined' && uwPresetEnabled), toggle: () => dsk.commands['/uw']() },
     { label: '🐺 Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
-    { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
-    { label: 'Counter-Attack',     state: () => !!window._caActive,            toggle: () => dsk.commands['/counterattack']() },
-    { label: 'Auto Heal',          state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
-    { label: 'Auto Food',          state: () => !!dsk.food?.enabled,           toggle: () => dsk.commands['/food']() },
-    { label: 'Auto Caraway',       state: () => !!dsk.effct?.enabled,          toggle: () => dsk.commands['/effct']() },
-    { label: 'Follow',             state: () => !!dsk.follow?.enabled,         toggle: () => dsk.commands['/follow']() },
-    { label: 'WW',                 state: () => !!dsk.ww?.enabled,             toggle: () => dsk.commands['/ww']() },
-    { label: 'Diso',               state: () => !!dsk.diso?.enabled,           toggle: () => dsk.commands['/diso']() },
+    { label: 'AutoKill',              state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
+    { label: 'Counter-Attack',        state: () => !!window._caActive,            toggle: () => dsk.commands['/counterattack']() },
+    { label: 'Auto Heal',             state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
+    { label: 'Auto Food',             state: () => !!dsk.food?.enabled,           toggle: () => dsk.commands['/food']() },
+    { label: 'Auto Caraway',          state: () => !!dsk.effct?.enabled,          toggle: () => dsk.commands['/effct']() },
+    { label: 'Follow',                state: () => !!dsk.follow?.enabled,         toggle: () => dsk.commands['/follow']() },
+    { label: 'WW',                    state: () => !!dsk.ww?.enabled,             toggle: () => dsk.commands['/ww']() },
+    { label: 'Diso',                  state: () => !!dsk.diso?.enabled,           toggle: () => dsk.commands['/diso']() },
   ]},
 
   { label: '🛠️  Utilidades', items: [
-    { label: 'Speed',              state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
-    { label: 'Teleport',           state: () => false,                         toggle: () => dsk.commands['/teleport']() },
-    { label: 'Onlines',            state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
-    { label: 'Tribe List',         state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
-    { label: 'Zoom',               state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
-    { label: 'Reconnect',          state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
-    { label: 'Habilidades',        state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
-    { label: 'Inventário',         state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
-    { label: 'Gem Skills',         state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
-    { label: 'Base Repair',        state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
-    { label: 'Org Runas',          state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
-    { label: 'Runas Config',       state: () => !!scPanel,                     toggle: () => dsk.commands['/sortconfig']() },
-    { label: 'Quest Hud',          state: () => !!dsk.questHud?.enabled,       toggle: () => dsk.commands['/questtext']() },
-    { label: 'Quest Painel',       state: () => !!dsk.questManager?.visible,   toggle: () => dsk.commands['/questhub']() },
+    { label: 'Speed',                 state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
+    { label: 'Teleport',              state: () => false,                         toggle: () => dsk.commands['/teleport']() },
+    { label: 'Onlines',               state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
+    { label: 'Tribe List',            state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
+    { label: 'Zoom',                  state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
+    { label: 'Reconnect',             state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
+    { label: 'Habilidades',           state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
+    { label: 'Inventário',            state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
+    { label: 'Gem Skills',            state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
+    { label: 'Base Repair',           state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
+    { label: 'Org Runas',             state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
+    { label: 'Runas Config',          state: () => !!(typeof scPanel !== 'undefined' && scPanel), toggle: () => dsk.commands['/sortconfig']() },
+    { label: 'Quest Painel',          state: () => !!dsk.questManager?.visible,   toggle: () => dsk.commands['/questhub']() },
+    { label: 'Quest Hud',             state: () => !!dsk.questHud?.enabled,       toggle: () => dsk.commands['/questtext']() },
   ]},
 
   { label: '⚙️  Config / UI', items: [
-    { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,  toggle: () => dsk.commands['/hotbar']() },
-    { label: 'Bússola',            state: () => !!dsk.ginfo?.label?.visible,   toggle: () => dsk.commands['/compass']() },
-    { label: '% Barras',           state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
-    { label: 'Radar',              state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
-    { label: 'Hide Name',          state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
-    { label: 'Color Picker',       state: () => !!(typeof cp !== 'undefined' && cp?.visible), toggle: () => dsk.commands['/colorpicker']() },
-    { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
-    { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
-    { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
-    { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
-    { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
-    { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
+    { label: 'Hotbar',                state: () => !!dsk.compactHotbar?.enabled,  toggle: () => dsk.commands['/hotbar']() },
+    { label: 'Bússola',               state: () => !!dsk.ginfo?.label?.visible,   toggle: () => dsk.commands['/compass']() },
+    { label: '% Barras',              state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
+    { label: 'Radar',                 state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
+    { label: 'Hide Name',             state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
+    { label: 'Color Picker',          state: () => !!(typeof cp !== 'undefined' && cp?.visible), toggle: () => dsk.commands['/colorpicker']() },
+    { label: 'Discord Config',        state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
+    { label: 'Discord',               state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
+    { label: 'Hub Button',            state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
+    { label: 'Death Tracker',         state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
+    { label: 'Loot Tracker',          state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
+    { label: 'Buy (use /buy N)',      state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
   ]},
 ];
 
@@ -5407,7 +5408,7 @@ dsk.on('postLoop', () => {
 
 // Botão flutuante para abrir/fechar o menu
 dsk.menu.toggleBtn = jv.Button.create(0, 0, 60, '☰ Menu', ui_container, 22);
-dsk.menu.toggleBtn.x = 235;
+dsk.menu.toggleBtn.x = 320;
 dsk.menu.toggleBtn.y = 38;
 dsk.menu.toggleBtn.title.style.fill = 0xFFD700;
 dsk.menu.toggleBtn.visible = true;
@@ -5883,8 +5884,8 @@ dsk.radar.label = jv.text('', {
   lineJoin:        'round',
   align:           'left',
 });
-dsk.radar.label.x           = 420;
-dsk.radar.label.y           = 30;
+dsk.radar.label.x           = 220;
+dsk.radar.label.y           = 34;
 dsk.radar.label.visible     = false;
 dsk.radar.label.interactive = true;
 dsk.radar.label.buttonMode  = true;
@@ -19409,6 +19410,160 @@ dsk.setCmd('/dr', () => {
     );
 });
 
+
+// ── PRESET UW ──────────────────────────────────────────────────
+
+var uwPresetEnabled = false;
+
+dsk.setCmd('/uw', () => {
+
+    uwPresetEnabled = !uwPresetEnabled;
+
+
+    // ═══════════════════════════════════════════════════════════
+    // ATIVAR PRESET
+    // ═══════════════════════════════════════════════════════════
+
+    if (uwPresetEnabled) {
+
+        // ── Botões flutuantes ─────────────────────────────────
+
+        botaoZoomVisible = true;
+        jv.botaoZoom.visible = true;
+
+        botaoSpeedBtnVisible = true;
+        jv.botaoSpeed.visible = true;
+
+        botaoDropVisible = true;
+        jv.botaoDrop.visible = true;
+
+        botaoPickVisible = true;
+        jv.botaoPick.visible = true;
+
+
+        // ── Speed ─────────────────────────────────────────────
+        // Configura 180, mas começa desligado.
+
+        if (dsk.speed?.enabled) {
+            dsk.commands['/speed']();
+        }
+
+        dsk.commands['/speed']('180');
+
+        jv.botaoSpeed.title.text = 'Of';
+        jv.botaoSpeed.title.style.fill = 0xff4444;
+
+
+        // ── Bússola ───────────────────────────────────────────
+
+        if (!dsk.ginfo?.label?.visible) {
+            dsk.commands['/compass']();
+        }
+
+
+        // ── Radar ─────────────────────────────────────────────
+
+        if (!dsk.radar?.enabled) {
+            dsk.commands['/radar']();
+        }
+
+
+        // ── Hotbar ────────────────────────────────────────────
+
+        if (!dsk.compactHotbar?.enabled) {
+            dsk.commands['/hotbar']();
+        }
+
+
+        // ── Quest HUD ─────────────────────────────────────────
+
+        if (!dsk.questHud?.enabled) {
+            dsk.commands['/questtext']();
+        }
+
+
+        // ── % Barras ──────────────────────────────────────────
+
+        if (!dsk.bars?.enabled) {
+            dsk.commands['/bars']();
+        }
+
+
+        dsk.localMsg('UW Preset: Ativado | Speed 180 (OFF)', '#5f5');
+        return;
+    }
+
+
+    // ═══════════════════════════════════════════════════════════
+    // DESATIVAR PRESET
+    // ═══════════════════════════════════════════════════════════
+
+    // ── Botões flutuantes ─────────────────────────────────────
+
+    botaoZoomVisible = false;
+    jv.botaoZoom.visible = false;
+
+    botaoSpeedBtnVisible = false;
+    jv.botaoSpeed.visible = false;
+
+    botaoDropVisible = false;
+    jv.botaoDrop.visible = false;
+
+    botaoPickVisible = false;
+    jv.botaoPick.visible = false;
+
+    closeDropPanel();
+
+
+    // ── Speed ─────────────────────────────────────────────────
+
+    if (dsk.speed?.enabled) {
+        dsk.commands['/speed']();
+    }
+
+    jv.botaoSpeed.title.text = 'Of';
+    jv.botaoSpeed.title.style.fill = 0xff4444;
+
+
+    // ── Bússola ───────────────────────────────────────────────
+
+    if (dsk.ginfo?.label?.visible) {
+        dsk.commands['/compass']();
+    }
+
+
+    // ── Radar ─────────────────────────────────────────────────
+
+    if (dsk.radar?.enabled) {
+        dsk.commands['/radar']();
+    }
+
+
+    // ── Hotbar ────────────────────────────────────────────────
+
+    if (dsk.compactHotbar?.enabled) {
+        dsk.commands['/hotbar']();
+    }
+
+
+    // ── Quest HUD ─────────────────────────────────────────────
+
+    if (dsk.questHud?.enabled) {
+        dsk.commands['/questtext']();
+    }
+
+
+    // ── % Barras ──────────────────────────────────────────────
+
+    if (dsk.bars?.enabled) {
+        dsk.commands['/bars']();
+    }
+
+
+    dsk.localMsg('UW Preset: Desativado', '#f55');
+});
+
+
 // ── BOTÃO FLUTUANTE HUB ───────────────────────────────────────
 
 
@@ -19416,7 +19571,7 @@ var hubBtnVisible = false;
 
 jv.botaoHub = jv.Button.create(0, 0, 60, '⚔ Hub', ui_container, 22);
 jv.botaoHub.x = 320;
-jv.botaoHub.y = 38;
+jv.botaoHub.y = 64;
 jv.botaoHub.title.style.fill = 0x01ffe6;
 jv.botaoHub.title.style.strokeThickness = 1;
 jv.botaoHub.visible = false;
@@ -21227,8 +21382,8 @@ dsk.questHud.label = jv.text('', {
   lineJoin: 'round',
   align: 'left',
 });
-dsk.questHud.label.x = 8;
-dsk.questHud.label.y = 65;
+dsk.questHud.label.x = 213;
+dsk.questHud.label.y = 69;
 dsk.questHud.label.visible     = false;
 dsk.questHud.label.interactive = true;
 dsk.questHud.label.buttonMode  = true;
