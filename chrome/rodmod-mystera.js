@@ -3796,19 +3796,6 @@ dsk.setCmd('/skills', () => {
     }));
 
 
-    // Skill name
-    const skills = ['repairing'];
-    let skillIdx = 0;
-    body.appendChild(makeRow('Skill name', 'skill', () => {
-      const btn = makeBtn(skills[0], () => {
-        skillIdx = (skillIdx + 1) % skills.length;
-        window.skillName = skills[skillIdx];
-        btn.textContent = window.skillName;
-        renderValues();
-      });
-      return btn;
-    }));
-
 
     // ── Status ao vivo ─────────────────────────────────────────
     const statusBox = document.createElement('div');
@@ -3844,127 +3831,456 @@ dsk.setCmd('/skills', () => {
     });
     skillSection.appendChild(skillSecHeader);
 
+    // Usa a lista oficial de skills já conhecida pelo RodMod.
+    // A interface mostra o nome normal (ex.: Sword),
+    // mas skillConfig continua salvando a chave em minúsculo (ex.: sword).
+    const skillOptions = Object.keys(skillSpriteMap)
+      .sort((a, b) => a.localeCompare(b));
+
+    const skillDisplayByKey = {};
+    skillOptions.forEach(name => {
+      skillDisplayByKey[name.toLowerCase()] = name;
+    });
+
+    function clampSkillLevel(value) {
+      const n = parseInt(value);
+      if (isNaN(n)) return 1;
+      return Math.max(1, Math.min(100, n));
+    }
+
+    function hasSkillConfig(skillKey) {
+      return Object.prototype.hasOwnProperty.call(
+        window.skillConfig || {},
+        skillKey
+      );
+    }
+
+    function makeSkillSelect(selectedKey = '', withPlaceholder = false) {
+      const select = document.createElement('select');
+      select.className = 'rodmod-skill-select';
+
+      // Remove as setas nativas dos inputs numéricos do seletor de skills.
+      if (!document.getElementById('rodmod-skill-level-style')) {
+        const style = document.createElement('style');
+        style.id = 'rodmod-skill-level-style';
+        style.textContent = `
+          .rodmod-skill-level-input {
+            -moz-appearance: textfield;
+            appearance: textfield;
+          }
+
+          .rodmod-skill-level-input::-webkit-outer-spin-button,
+          .rodmod-skill-level-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+          }
+
+          .rodmod-skill-select option {
+            background: #111;
+            color: #FFD700;
+          }
+
+          .rodmod-skill-select option:hover {
+            background: #245fa3;
+            color: #fff;
+          }
+
+          .rodmod-skill-select option:checked {
+            background: #245fa3 linear-gradient(0deg, #245fa3 0%, #245fa3 100%);
+            color: #fff;
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      select.size = 1;
+
+      Object.assign(select.style, {
+        width: '90px',
+        height: '24px',
+        boxSizing: 'border-box',
+        padding: '2px 3px',
+        borderRadius: '4px',
+        border: '1px solid #555',
+        background: '#111',
+        color: '#FFD700',
+        fontSize: '10px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+      });
+
+      if (withPlaceholder) {
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'Skill...';
+        placeholder.disabled = true;
+        select.appendChild(placeholder);
+      }
+
+      skillOptions.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name.toLowerCase();
+        option.textContent = name;
+        select.appendChild(option);
+      });
+
+      const normalized = String(selectedKey || '').trim().toLowerCase();
+
+      // Compatibilidade com configuração antiga fora da lista oficial.
+      if (normalized && !skillDisplayByKey[normalized]) {
+        const legacy = document.createElement('option');
+        legacy.value = normalized;
+        legacy.textContent = `⚠ ${selectedKey}`;
+
+        select.insertBefore(
+          legacy,
+          withPlaceholder ? select.children[1] : select.firstChild
+        );
+      }
+
+      if (normalized) {
+        select.value = normalized;
+      } else if (withPlaceholder) {
+        select.value = '';
+      } else if (skillOptions.length > 0) {
+        select.value = skillOptions[0].toLowerCase();
+      }
+
+      function openSkillList() {
+        if (select.size > 1) return;
+
+        // No máximo 7 skills visíveis.
+        const rows = Math.min(7, select.options.length);
+
+        select.size = Math.max(2, rows);
+        select.style.height = `${Math.max(2, rows) * 22}px`;
+        select.style.zIndex = '20';
+      }
+
+      function closeSkillList() {
+        select.size = 1;
+        select.style.height = '24px';
+        select.style.zIndex = '';
+      }
+
+      // Primeiro clique abre nossa lista compacta.
+      select.addEventListener('mousedown', e => {
+        e.stopPropagation();
+
+        if (select.size === 1) {
+          e.preventDefault();
+          openSkillList();
+          select.focus();
+        }
+      });
+
+      // Mesmo comportamento para touchscreen.
+      select.addEventListener('touchstart', e => {
+        e.stopPropagation();
+
+        if (select.size === 1) {
+          e.preventDefault();
+          openSkillList();
+          select.focus();
+        }
+      }, { passive: false });
+
+      // Depois de escolher uma skill, volta a ficar pequeno.
+      select.addEventListener('change', () => {
+        closeSkillList();
+
+        setTimeout(() => {
+          select.blur();
+        }, 0);
+      });
+
+      select.addEventListener('blur', () => {
+        closeSkillList();
+      });
+
+      ['keydown', 'keyup'].forEach(evt => {
+        select.addEventListener(evt, e => e.stopPropagation());
+      });
+
+      return select;
+    }
+
+    function makeMiniBtn(txt, onclick) {
+      const btn = makeBtn(txt, onclick);
+
+      Object.assign(btn.style, {
+        padding: '2px 4px',
+        minWidth: '0',
+        fontSize: '10px',
+        lineHeight: '16px',
+        boxSizing: 'border-box',
+      });
+
+      // Dá um pouco mais de destaque aos controles de ±1.
+      if (txt === '-' || txt === '+') {
+        Object.assign(btn.style, {
+          padding: '2px 5px',
+          minWidth: '18px',
+          fontSize: '11px',
+          fontWeight: 'bold',
+        });
+      }
+
+      return btn;
+    }
+
     // Renderiza linhas das skills configuradas
     function renderSkillRows() {
       const old = skillSection.querySelectorAll('.skill-row');
       old.forEach(r => r.remove());
 
       const cfg = window.skillConfig || {};
-      Object.keys(cfg).forEach(sk => {
-        skillSection.insertBefore(makeSkillRow(sk, cfg[sk]), addRow);
-      });
+
+      Object.keys(cfg)
+        .sort((a, b) => {
+          const nameA = skillDisplayByKey[String(a).toLowerCase()] || a;
+          const nameB = skillDisplayByKey[String(b).toLowerCase()] || b;
+          return nameA.localeCompare(nameB);
+        })
+        .forEach(sk => {
+          skillSection.insertBefore(makeSkillRow(sk, cfg[sk]), addRow);
+        });
     }
 
-    function makeSkillRow(skillKey, levelVal) {
+    function makeSkillRow(initialSkillKey, levelVal) {
+      let skillKey = String(initialSkillKey || '').trim().toLowerCase();
+
       const row = document.createElement('div');
       row.className = 'skill-row';
+
       Object.assign(row.style, {
-        background: '#1e2a1e', border: '1px solid #3a5a3a',
-        borderRadius: '6px', padding: '5px 8px',
-        display: 'flex', alignItems: 'center', gap: '5px',
+        background: '#1e2a1e',
+        border: '1px solid #3a5a3a',
+        borderRadius: '6px',
+        padding: '5px 6px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
       });
 
-      // Label skill (editável)
-      const inpSkill = document.createElement('input');
-      inpSkill.type = 'text';
-      inpSkill.value = skillKey;
-      Object.assign(inpSkill.style, {
-        width: '90px', padding: '2px 5px', borderRadius: '4px',
-        border: '1px solid #555', background: '#111', color: '#FFD700',
-        fontSize: '10px', fontWeight: 'bold',
-      });
-      inpSkill.addEventListener('keydown', e => e.stopPropagation());
-      inpSkill.addEventListener('keyup',   e => e.stopPropagation());
-      inpSkill.addEventListener('mousedown', e => e.stopPropagation());
-      inpSkill.onchange = () => {
-        const oldKey = skillKey;
-        const newKey = inpSkill.value.trim().toLowerCase();
-        if (!newKey || newKey === oldKey) { inpSkill.value = oldKey; return; }
-        const lvl = window.skillConfig[oldKey];
-        delete window.skillConfig[oldKey];
+      // Skill — agora é seleção, não texto livre.
+      const skillSelect = makeSkillSelect(skillKey);
+
+      skillSelect.onchange = () => {
+        const newKey = skillSelect.value.trim().toLowerCase();
+
+        if (!newKey || newKey === skillKey) return;
+
+        if (hasSkillConfig(newKey)) {
+          skillSelect.value = skillKey;
+
+          dsk.localMsg(
+            `Skill ${skillDisplayByKey[newKey] || newKey} já configurada`,
+            '#ff0'
+          );
+
+          return;
+        }
+
+        const lvl = window.skillConfig[skillKey];
+
+        delete window.skillConfig[skillKey];
         window.skillConfig[newKey] = lvl;
+
         skillKey = newKey;
+
+        renderSkillRows();
       };
 
-      // Input nivel
+      // Nível alvo
       const inpLvl = document.createElement('input');
       inpLvl.type = 'number';
-      inpLvl.min = 0; inpLvl.max = 100;
-      inpLvl.value = levelVal || '';
+      inpLvl.className = 'rodmod-skill-level-input';
+      inpLvl.min = 1;
+      inpLvl.max = 100;
+      inpLvl.value = levelVal ?? 1;
+
       Object.assign(inpLvl.style, {
-        width: '56px', padding: '2px 5px', borderRadius: '4px',
-        border: '1px solid #555', background: '#111', color: '#fff',
+        width: '30px',
+        height: '24px',
+        boxSizing: 'border-box',
+        padding: '2px 3px',
+        borderRadius: '4px',
+        border: '1px solid #555',
+        background: '#111',
+        color: '#fff',
         fontSize: '10px',
+        textAlign: 'center',
       });
-      inpLvl.oninput = () => {
-        const v = parseInt(inpLvl.value);
-        window.skillConfig[skillKey] = isNaN(v) ? 0 : v;
+
+      ['keydown', 'keyup', 'mousedown', 'touchstart'].forEach(evt => {
+        inpLvl.addEventListener(evt, e => e.stopPropagation());
+      });
+
+      function setRowLevel(value) {
+        const lvl = clampSkillLevel(value);
+        inpLvl.value = lvl;
+        window.skillConfig[skillKey] = lvl;
+      }
+
+      inpLvl.onchange = () => {
+        setRowLevel(inpLvl.value);
       };
+
+      const minus10Btn = makeMiniBtn('-10', () => {
+        setRowLevel(clampSkillLevel(inpLvl.value) - 10);
+      });
+
+      const minus1Btn = makeMiniBtn('-', () => {
+        setRowLevel(clampSkillLevel(inpLvl.value) - 1);
+      });
+
+      const plus1Btn = makeMiniBtn('+', () => {
+        setRowLevel(clampSkillLevel(inpLvl.value) + 1);
+      });
+
+      const plus10Btn = makeMiniBtn('+10', () => {
+        setRowLevel(clampSkillLevel(inpLvl.value) + 10);
+      });
 
       // Botão remover
       const clrBtn = document.createElement('button');
       clrBtn.textContent = '✕';
+
       Object.assign(clrBtn.style, {
-        padding: '1px 6px', borderRadius: '4px', border: '1px solid #555',
-        background: '#1a1a2e', color: '#aaa', cursor: 'pointer', fontSize: '10px',
+        padding: '1px 5px',
+        borderRadius: '4px',
+        border: '1px solid #555',
+        background: '#1a1a2e',
+        color: '#aaa',
+        cursor: 'pointer',
+        fontSize: '10px',
         marginLeft: 'auto',
       });
+
       clrBtn.onclick = () => {
         delete window.skillConfig[skillKey];
         row.remove();
       };
 
-      row.appendChild(inpSkill);
+      row.appendChild(skillSelect);
       row.appendChild(inpLvl);
+      row.appendChild(minus10Btn);
+      row.appendChild(minus1Btn);
+      row.appendChild(plus1Btn);
+      row.appendChild(plus10Btn);
       row.appendChild(clrBtn);
+
       return row;
     }
 
-    // Linha de adicionar nova skill
+    // Linha para adicionar nova configuração
     const addRow = document.createElement('div');
+
     Object.assign(addRow.style, {
-      display: 'flex', alignItems: 'center', gap: '5px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px',
     });
-    const addInpSkill = document.createElement('input');
-    addInpSkill.type = 'text';
-    addInpSkill.placeholder = 'skill name';
-    Object.assign(addInpSkill.style, {
-      width: '90px', padding: '2px 5px', borderRadius: '4px',
-      border: '1px solid #555', background: '#111', color: '#fff', fontSize: '10px',
-    });
-    addInpSkill.addEventListener('keydown', e => e.stopPropagation());
-    addInpSkill.addEventListener('keyup',   e => e.stopPropagation());
-    addInpSkill.addEventListener('mousedown', e => e.stopPropagation());
+
+    const addSkillSelect = makeSkillSelect('', true);
+
     const addInpLvl = document.createElement('input');
     addInpLvl.type = 'number';
-    addInpLvl.placeholder = 'lvl';
-    addInpLvl.min = 0; addInpLvl.max = 100;
+    addInpLvl.className = 'rodmod-skill-level-input';
+    addInpLvl.min = 1;
+    addInpLvl.max = 100;
+    addInpLvl.value = '1';
+
     Object.assign(addInpLvl.style, {
-      width: '56px', padding: '2px 5px', borderRadius: '4px',
-      border: '1px solid #555', background: '#111', color: '#fff', fontSize: '10px',
+      width: '30px',
+      height: '24px',
+      boxSizing: 'border-box',
+      padding: '2px 3px',
+      borderRadius: '4px',
+      border: '1px solid #555',
+      background: '#111',
+      color: '#fff',
+      fontSize: '10px',
+      textAlign: 'center',
     });
-    addInpLvl.addEventListener('keydown', e => e.stopPropagation());
-    addInpLvl.addEventListener('keyup',   e => e.stopPropagation());
-    addInpLvl.addEventListener('mousedown', e => e.stopPropagation());
+
+    ['keydown', 'keyup', 'mousedown', 'touchstart'].forEach(evt => {
+      addInpLvl.addEventListener(evt, e => e.stopPropagation());
+    });
+
+    function setAddLevel(value) {
+      addInpLvl.value = clampSkillLevel(value);
+    }
+
+    const addMinus10Btn = makeMiniBtn('-10', () => {
+      setAddLevel(clampSkillLevel(addInpLvl.value) - 10);
+    });
+
+    const addMinus1Btn = makeMiniBtn('-', () => {
+      setAddLevel(clampSkillLevel(addInpLvl.value) - 1);
+    });
+
+    const addPlus1Btn = makeMiniBtn('+', () => {
+      setAddLevel(clampSkillLevel(addInpLvl.value) + 1);
+    });
+
+    const addPlus10Btn = makeMiniBtn('+10', () => {
+      setAddLevel(clampSkillLevel(addInpLvl.value) + 10);
+    });
+
     const addBtn = document.createElement('button');
-    addBtn.textContent = '+ add';
+    addBtn.textContent = '+';
+
     Object.assign(addBtn.style, {
-      padding: '2px 8px', borderRadius: '4px', border: '1px solid #5a5',
-      background: '#1a2e1a', color: '#5f5', cursor: 'pointer', fontSize: '10px',
+      padding: '2px 7px',
+      minWidth: '24px',
+      height: '24px',
+      boxSizing: 'border-box',
+      borderRadius: '4px',
+      border: '1px solid #5a5',
+      background: '#1a2e1a',
+      color: '#5f5',
+      cursor: 'pointer',
+      fontSize: '12px',
+      fontWeight: 'bold',
     });
+
     addBtn.onclick = () => {
-      const sk = addInpSkill.value.trim().toLowerCase();
-      const lv = parseInt(addInpLvl.value);
-      if (!sk || isNaN(lv) || lv <= 0) return;
+      const sk = addSkillSelect.value.trim().toLowerCase();
+      const lv = clampSkillLevel(addInpLvl.value);
+
+      if (!sk) {
+        dsk.localMsg('Selecione uma skill', '#ff0');
+        return;
+      }
+
+      if (hasSkillConfig(sk)) {
+        dsk.localMsg(
+          `Skill ${skillDisplayByKey[sk] || sk} já configurada`,
+          '#ff0'
+        );
+        return;
+      }
+
       if (!window.skillConfig) window.skillConfig = {};
+
       window.skillConfig[sk] = lv;
-      skillSection.insertBefore(makeSkillRow(sk, lv), addRow);
-      addInpSkill.value = '';
-      addInpLvl.value = '';
+
+      renderSkillRows();
+
+      addSkillSelect.value = '';
+      addInpLvl.value = '1';
     };
-    addRow.appendChild(addInpSkill);
+
+    addRow.appendChild(addSkillSelect);
     addRow.appendChild(addInpLvl);
+    addRow.appendChild(addMinus10Btn);
+    addRow.appendChild(addMinus1Btn);
+    addRow.appendChild(addPlus1Btn);
+    addRow.appendChild(addPlus10Btn);
     addRow.appendChild(addBtn);
+
     skillSection.appendChild(addRow);
 
     renderSkillRows();
@@ -5175,7 +5491,7 @@ dsk.on('postLoop', dsk.menu.updatePosition);
 const RODMOD_MENU_SECTIONS = [
   { label: '⚔️  Skills', items: [
     { label: '🔢 Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
-    { label: '⚙️ Rotation Config',    state: () => !!(typeof rm !== 'undefined' && rm?.visible), toggle: () => dsk.commands['/rotationconfig']() },
+    { label: '⚙️ Rotation',    state: () => !!dsk.rotation?.enabled, toggle: () => dsk.commands['/rotationconfig']() },
     { label: '⚙️ Skills Config',      state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
     { label: '⭐ Skills',             state: () => !!dsk.skillHud?.enabled,       toggle: () => dsk.commands['/skills']() },
     { label: '▶️ Armas Bot',          state: () => !!dsk.armas?.enabled,          toggle: () => dsk.commands['/armas']() },
@@ -5200,14 +5516,14 @@ const RODMOD_MENU_SECTIONS = [
 
   { label: '⛏️  Recursos', items: [
     { label: '⛏️ Mine Hub',           state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
+    { label: '🪨 Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
+    { label: '🌿 Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
+    { label: '🌲 Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
     { label: '🐺 WC Mining',          state: () => !!dsk.wcmining?.enabled,       toggle: () => dsk.commands['/wcmining']() },
     { label: '💎 Crystal Rock',       state: () => !!dsk.crystal?.enabled,        toggle: () => dsk.commands['/crystal']() },
-    { label: '🌲 Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
-    { label: '🪨 Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
     { label: '🪏 Clay Bot',           state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/claypanel']() },
     { label: '🌲 Forest Bot',         state: () => !!dsk.forest?.enabled,         toggle: () => dsk.commands['/forestconfig']() },
     { label: '🐑 Sheep Bot',          state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
-    { label: '🌿 Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
     { label: '🐔 Galinha Bot',        state: () => !!dsk.gal?.enabled,            toggle: () => dsk.commands['/galconfig']() },
     { label: '🖌️ Tinta',              state: () => !!dsk.tinta?.enabled,          toggle: () => dsk.commands['/tinta']() },
   ]},
@@ -13518,6 +13834,72 @@ async function rotRun() {
   ];
 
 
+  // ── Persistência da configuração da Rotation ───────────────
+  // Salva somente níveis e ON/SKIP.
+  // Não salva se a Rotation está rodando.
+  // As posições continuam usando dsk_rotation_pos separadamente.
+  const ROT_SETTINGS_KEY = 'dsk_rotation_settings_v1';
+
+  const ROT_DEFAULT_LEVELS = {
+    cookLevel:     40,
+    smeltLevel:    40,
+    swordLevel:    40,
+    hammerLevel:   40,
+    armasLevel:    40,
+    smithingLevel: 40,
+    destruLevel:   40,
+  };
+
+  function saveRotationSettings() {
+    try {
+      const levels = {};
+      const skips = {};
+
+      ROT_STEPS.forEach(({ cfgKey, skipKey }) => {
+        levels[cfgKey] = rotationConfig[cfgKey];
+        skips[skipKey] = !!rotationConfig[skipKey];
+      });
+
+      localStorage.setItem(
+        ROT_SETTINGS_KEY,
+        JSON.stringify({
+          version: 1,
+          levels,
+          skips,
+        })
+      );
+    } catch(e) {}
+  }
+
+  function loadRotationSettings() {
+    try {
+      const saved = JSON.parse(
+        localStorage.getItem(ROT_SETTINGS_KEY) || 'null'
+      );
+
+      if (!saved || saved.version !== 1) return;
+
+      ROT_STEPS.forEach(({ cfgKey, skipKey }) => {
+        const savedLevel = Number(saved.levels?.[cfgKey]);
+
+        if (Number.isFinite(savedLevel)) {
+          rotationConfig[cfgKey] = Math.max(
+            1,
+            Math.min(200, Math.floor(savedLevel))
+          );
+        }
+
+        if (typeof saved.skips?.[skipKey] === 'boolean') {
+          rotationConfig[skipKey] = saved.skips[skipKey];
+        }
+      });
+    } catch(e) {}
+  }
+
+  // Carrega assim que o RodMod inicia.
+  loadRotationSettings();
+
+
   const POS_STEPS = [
     { key: 'cook',      label: 'Cook'       },
     { key: 'smelt',     label: 'Smelt'      },
@@ -13670,6 +14052,7 @@ async function rotRun() {
 
 
       const valEl = document.createElement('span');
+      valEl.dataset.rmlvl = cfgKey;
       valEl.textContent = String(rotationConfig[cfgKey]);
       Object.assign(valEl.style, {
         color: '#FFD700', fontSize: '11px', minWidth: '24px', textAlign: 'center',
@@ -13679,11 +14062,13 @@ async function rotRun() {
       lvlWrap.appendChild(makeSmallBtn('-', () => {
         rotationConfig[cfgKey] = Math.max(1, rotationConfig[cfgKey] - 1);
         valEl.textContent = String(rotationConfig[cfgKey]);
+        saveRotationSettings();
       }));
       lvlWrap.appendChild(valEl);
       lvlWrap.appendChild(makeSmallBtn('+', () => {
         rotationConfig[cfgKey] = Math.min(200, rotationConfig[cfgKey] + 1);
         valEl.textContent = String(rotationConfig[cfgKey]);
+        saveRotationSettings();
       }));
 
 
@@ -13703,6 +14088,7 @@ async function rotRun() {
       skipBtn.onclick = () => {
         rotationConfig[skipKey] = !rotationConfig[skipKey];
         updateSkip();
+        saveRotationSettings();
       };
       updateSkip();
 
@@ -13710,6 +14096,54 @@ async function rotRun() {
       row.appendChild(lbl); row.appendChild(lvlWrap); row.appendChild(skipBtn);
       body.appendChild(row);
     });
+
+
+    // ── Botão reset níveis ────────────────────────────────────
+    const btnResetLevels = document.createElement('button');
+    btnResetLevels.textContent = '↺ Resetar níveis';
+
+    Object.assign(btnResetLevels.style, {
+      width: '100%',
+      padding: '7px 0',
+      borderRadius: '7px',
+      border: '1px solid #ff0',
+      background: '#1a1a10',
+      color: '#ff0',
+      cursor: 'pointer',
+      fontFamily: 'Verdana',
+      fontSize: '11px',
+    });
+
+    btnResetLevels.onmouseenter = () => {
+      btnResetLevels.style.background = '#2a2a1a';
+    };
+
+    btnResetLevels.onmouseleave = () => {
+      btnResetLevels.style.background = '#1a1a10';
+    };
+
+    btnResetLevels.onclick = () => {
+      ROT_STEPS.forEach(({ cfgKey }) => {
+        rotationConfig[cfgKey] = ROT_DEFAULT_LEVELS[cfgKey];
+
+        const el = rmPanel.querySelector(
+          `[data-rmlvl="${cfgKey}"]`
+        );
+
+        if (el) {
+          el.textContent = String(rotationConfig[cfgKey]);
+        }
+      });
+
+      saveRotationSettings();
+
+      dsk.localMsg(
+        'Rotation: níveis resetados para 40',
+        '#ff0'
+      );
+    };
+
+    body.appendChild(btnResetLevels);
 
 
     // ── Status ao vivo ────────────────────────────────────────
