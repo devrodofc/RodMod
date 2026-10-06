@@ -5169,79 +5169,100 @@ dsk.menu.updatePosition = () => {
 dsk.on('postLoop', dsk.menu.updatePosition);
 
 
-// Lista de bots com referência ao objeto de estado
-dsk.menu.items = [
+// Fonte única das opções do Menu e do Hub.
+// O Menu transforma estas seções em lista plana;
+// o Hub usa as categorias diretamente.
+const RODMOD_MENU_SECTIONS = [
+  { label: '⚔️  Skills', items: [
+    { label: '🔢 Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
+    { label: '⚙️ Rotation Config',    state: () => !!(typeof rm !== 'undefined' && rm?.visible), toggle: () => dsk.commands['/rotationconfig']() },
+    { label: '⚙️ Skills Config',      state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
+    { label: '⭐ Skills',             state: () => !!dsk.skillHud?.enabled,       toggle: () => dsk.commands['/skills']() },
+    { label: '▶️ Armas Bot',          state: () => !!dsk.armas?.enabled,          toggle: () => dsk.commands['/armas']() },
+    { label: '🗡️ Sword',              state: () => !!dsk.sword?.enabled,          toggle: () => dsk.commands['/sword']() },
+    { label: '🔨 Hammer',             state: () => !!dsk.hammer?.enabled,         toggle: () => dsk.commands['/hammer']() },
+    { label: '🧱 Destruction',        state: () => !!dsk.destruction?.enabled,    toggle: () => dsk.commands['/destru']() },
+    { label: '🍲 Cooking',            state: () => !!dsk.cooking?.enabled,        toggle: () => dsk.commands['/cook']() },
+    { label: '🔥 Smelting',           state: () => !!dsk.smelting?.enabled,       toggle: () => dsk.commands['/smelt']() },
+    { label: '🌾 Farming',            state: () => !!dsk.farm?.enabled,           toggle: () => dsk.commands['/farm']() },
+    { label: '🎣 Fishing',            state: () => !!dsk.fish?.enabled,           toggle: () => dsk.commands['/fish']() },
+    { label: '💎 Smithing',           state: () => !!dsk.smithManager?.visible,   toggle: () => dsk.commands['/smithconfig']() },
+    { label: '🪏 Digging',            state: () => !!dsk.cavar?.enabled,          toggle: () => dsk.commands['/cavar']() },
+    { label: '🪵 Crafting',           state: () => !!dsk.craftManager?.visible,   toggle: () => dsk.commands['/craftconfig']() },
+    { label: '👟 Explo Bot',          state: () => !!dsk.explo?.enabled,          toggle: () => dsk.commands['/explo']() },
+    { label: '🩹 Heal Bot',           state: () => !!dsk.healbot?.enabled,        toggle: () => dsk.commands['/healbot']() },
+    { label: '🧶 Knitting',           state: () => !!dsk.knit?.enabled,           toggle: () => dsk.commands['/knit']() },
+    { label: '⚒️ Repair Bot',         state: () => !!dsk.repair?.enabled,         toggle: () => dsk.commands['/repair']() },
+    { label: '📚 Auto Research',      state: () => !!dsk.resear?.enabled,         toggle: () => dsk.commands['/resear']() },
+    { label: '🩸 Assassin Winner',    state: () => !!dsk.assassin?.enabled,       toggle: () => dsk.commands['/assassinconfig']() },
+    { label: '🩸 Assassin Loser',     state: () => !!dsk.loser?.enabled,          toggle: () => dsk.commands['/loserconfig']() },
+  ]},
 
-  // ─── ⚔️ Skills ────────────────────────────────────────────
-  { type: 'section', label: '⚔️  Skills' },
-  { label: 'Skills',             state: () => !!dsk.skillHud?.enabled,       toggle: () => dsk.commands['/skills']() },
-  { label: 'Skills Config',      state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
-  { label: 'Armas Bot',          state: () => !!dsk.armas?.enabled,          toggle: () => dsk.commands['/armas']() },
-  { label: 'Craft Config',       state: () => !!dsk.craftManager?.visible,   toggle: () => dsk.commands['/craftconfig']() },
-  { label: 'Destruction',        state: () => !!dsk.destruction?.enabled,    toggle: () => dsk.commands['/destru']() },
-  { label: 'Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible),               toggle: () => dsk.commands['/topskill']() },
+  { label: '⛏️  Recursos', items: [
+    { label: '⛏️ Mine Hub',        state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
+    { label: '🐺 WC Mining',       state: () => !!dsk.wcmining?.enabled,       toggle: () => dsk.commands['/wcmining']() },
+    { label: '💎 Crystal Rock',    state: () => !!dsk.crystal?.enabled,        toggle: () => dsk.commands['/crystal']() },
+    { label: '🌲 Wood Farm',       state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
+    { label: '🪨 Recursos Bot',    state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
+    { label: '🪏 Clay Bot',        state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/claypanel']() },
+    { label: '🌲 Forest Bot',      state: () => !!dsk.forest?.enabled,         toggle: () => dsk.commands['/forestconfig']() },
+    { label: '🐑 Sheep Bot',       state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
+    { label: '🌿 Aloe Bot',        state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
+    { label: '🐔 Galinha Bot',     state: () => !!dsk.gal?.enabled,            toggle: () => dsk.commands['/galconfig']() },
+    { label: '🖌️ Tinta',           state: () => !!dsk.tinta?.enabled,          toggle: () => dsk.commands['/tinta']() },
+  ]},
 
-  // ─── 🗡️ Hunt ─────────────────────────────────────────────
-  { type: 'section', label: '🗡️  Hunt' },
-  { label: 'Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
-  { label: 'Rotation Config',    state: () => !!(typeof rm !== 'undefined' && rm?.visible),                 toggle: () => dsk.commands['/rotationconfig']() },
-  { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
-  { label: 'Auto Explo',         state: () => !!dsk.explo?.enabled,          toggle: () => dsk.commands['/explo']() },
-  { label: 'HealBot',            state: () => !!dsk.healbot?.enabled,        toggle: () => dsk.commands['/healbot']() },
-  { label: 'Auto Heal',          state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
-  { label: 'Auto Food',          state: () => !!dsk.food?.enabled,           toggle: () => dsk.commands['/food']() },
-  { label: 'Auto Caraway',       state: () => !!dsk.effct?.enabled,          toggle: () => dsk.commands['/effct']() },
-  { label: 'Sword',              state: () => !!dsk.sword?.enabled,          toggle: () => dsk.commands['/sword']() },
-  { label: 'Hammer',             state: () => !!dsk.hammer?.enabled,         toggle: () => dsk.commands['/hammer']() },
+  { label: '🗡️  Hunt', items: [
+    { label: '🐺 Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
+    { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
+    { label: 'Counter-Attack',     state: () => !!window._caActive,            toggle: () => dsk.commands['/counterattack']() },
+    { label: 'Auto Heal',          state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
+    { label: 'Auto Food',          state: () => !!dsk.food?.enabled,           toggle: () => dsk.commands['/food']() },
+    { label: 'Auto Caraway',       state: () => !!dsk.effct?.enabled,          toggle: () => dsk.commands['/effct']() },
+    { label: 'Follow',             state: () => !!dsk.follow?.enabled,         toggle: () => dsk.commands['/follow']() },
+    { label: 'WW',                 state: () => !!dsk.ww?.enabled,             toggle: () => dsk.commands['/ww']() },
+    { label: 'Diso',               state: () => !!dsk.diso?.enabled,           toggle: () => dsk.commands['/diso']() },
+  ]},
 
-  // ─── ⛏️ Recursos ─────────────────────────────────────────
-  { type: 'section', label: '⛏️  Recursos' },
-  { label: '⛏️ Mine Hub',        state: () => !!(window.minm?.visible),        toggle: () => dsk.commands['/minehub']() },
-  { label: 'WC Mining',           state: () => !!dsk.wcmining?.enabled,        toggle: () => dsk.commands['/wcmining']() },
-  { label: 'Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
-  { label: 'Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
-  { label: 'Fishing',            state: () => !!dsk.fish?.enabled,           toggle: () => dsk.commands['/fish']() },
-  { label: 'Knitting',           state: () => !!dsk.knit?.enabled,           toggle: () => dsk.commands['/knit']() },
-  { label: 'Sheep Bot',          state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
-  { label: 'Clay Bot',           state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/clay']() },
-  { label: 'Farming',            state: () => !!dsk.farm?.enabled,           toggle: () => dsk.commands['/farm']() },
-  { label: 'Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
-  { label: 'Cooking',            state: () => !!dsk.cooking?.enabled,        toggle: () => dsk.commands['/cook']() },
-  { label: 'Smelting',           state: () => !!dsk.smelting?.enabled,       toggle: () => dsk.commands['/smelt']() },
-  { label: 'Repair Bot',         state: () => !!dsk.repair?.enabled,         toggle: () => dsk.commands['/repair']() },
-  { label: 'Base Repair',        state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
-  { label: 'Sort Fooders',       state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
-  { label: 'Cavar',              state: () => !!dsk.cavar?.enabled,          toggle: () => dsk.commands['/cavar']() },
+  { label: '🛠️  Utilidades', items: [
+    { label: 'Speed',              state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
+    { label: 'Teleport',           state: () => false,                         toggle: () => dsk.commands['/teleport']() },
+    { label: 'Onlines',            state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
+    { label: 'Tribe List',         state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
+    { label: 'Zoom',               state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
+    { label: 'Reconnect',          state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
+    { label: 'Habilidades',        state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
+    { label: 'Inventário',         state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
+    { label: 'Gem Skills',         state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
+    { label: 'Base Repair',        state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
+    { label: 'Org Runas',          state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
+    { label: 'Runas Config',       state: () => !!scPanel,                     toggle: () => dsk.commands['/sortconfig']() },
+    { label: 'Quest Hud',          state: () => !!dsk.questHud?.enabled,       toggle: () => dsk.commands['/questtext']() },
+    { label: 'Quest Painel',       state: () => !!dsk.questManager?.visible,   toggle: () => dsk.commands['/questhub']() },
+  ]},
 
-  // ─── 🛠️ Utilidades ───────────────────────────────────────
-  { type: 'section', label: '🛠️  Utilidades' },
-  { label: 'Speed',              state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
-  { label: 'Bússola',            state: () => !!dsk.ginfo?.label?.visible,   toggle: () => dsk.commands['/compass']() },
-  { label: '% Barras',           state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
-  { label: 'Habilidades',        state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
-  { label: 'Inventario',         state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
-  { label: 'Onlines',            state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
-  { label: 'Tribe List',         state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
-  { label: 'Radar',              state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
-  { label: 'Hide Name',          state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
-  { label: 'Follow',             state: () => !!dsk.follow?.enabled,         toggle: () => dsk.commands['/follow']() },
-  { label: 'WW',                 state: () => !!dsk.ww?.enabled,             toggle: () => dsk.commands['/ww']() },
-  { label: 'Diso',               state: () => !!dsk.diso?.enabled,           toggle: () => dsk.commands['/diso']() },
-  { label: 'Zoom 1.5x',          state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
-  { label: 'Reconnect',          state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
-
-  // ─── ⚙️ Config / UI ──────────────────────────────────────
-  { type: 'section', label: '⚙️  Config / UI' },
-  { label: 'Color Picker',       state: () => !!(typeof cp !== 'undefined' && cp?.visible),                 toggle: () => dsk.commands['/colorpicker']() },
-  { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible),                toggle: () => dsk.commands['/discordconfig']() },
-  { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
-  { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
-  { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,   toggle: () => dsk.commands['/hotbar']() },
-  { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
-  { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
-  { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
-
+  { label: '⚙️  Config / UI', items: [
+    { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,  toggle: () => dsk.commands['/hotbar']() },
+    { label: 'Bússola',            state: () => !!dsk.ginfo?.label?.visible,   toggle: () => dsk.commands['/compass']() },
+    { label: '% Barras',           state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
+    { label: 'Radar',              state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
+    { label: 'Hide Name',          state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
+    { label: 'Color Picker',       state: () => !!(typeof cp !== 'undefined' && cp?.visible), toggle: () => dsk.commands['/colorpicker']() },
+    { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
+    { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
+    { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
+    { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
+    { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
+    { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
+  ]},
 ];
+
+// O Menu PIXI continua usando o formato antigo.
+// Apenas geramos essa lista automaticamente a partir da fonte única.
+dsk.menu.items = RODMOD_MENU_SECTIONS.flatMap(section => [
+  { type: 'section', label: section.label },
+  ...section.items,
+]);
 
 
 dsk.menu.page = 0;
@@ -5508,86 +5529,8 @@ dsk.setCmd('/counterattack', () => {
   const DISCORD_URL = 'https://discord.gg/XkVhYENK7k';
 
 
-  const SECTIONS = [
-    { label: '⚔️  Skills', items: [
-      { label: 'Skills Config',      state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
-	  { label: 'Cooking',            state: () => !!dsk.cooking?.enabled,        toggle: () => dsk.commands['/cook']() },
-      { label: 'Smelting',           state: () => !!dsk.smelting?.enabled,       toggle: () => dsk.commands['/smelt']() },
-	  { label: 'Sword',              state: () => !!dsk.sword?.enabled,          toggle: () => dsk.commands['/sword']() },
-      { label: 'Hammer',             state: () => !!dsk.hammer?.enabled,         toggle: () => dsk.commands['/hammer']() },
-	  { label: 'Armas Bot',          state: () => !!dsk.armas?.enabled,          toggle: () => dsk.commands['/armas']() },
-      { label: 'Destruction',        state: () => !!dsk.destruction?.enabled,    toggle: () => dsk.commands['/destru']() },
-	  { label: 'Farming',            state: () => !!dsk.farm?.enabled,           toggle: () => dsk.commands['/farm']() },
-	  { label: 'Craft Config',       state: () => !!dsk.craftManager?.visible,   toggle: () => dsk.commands['/craftconfig']() },
-	  { label: 'Rotation Config',    state: () => !!(typeof rm !== 'undefined' && rm?.visible), toggle: () => dsk.commands['/rotationconfig']() },
-	  { label: 'Fishing',            state: () => !!dsk.fish?.enabled,           toggle: () => dsk.commands['/fish']() },
-	  { label: 'Explo Farm',         state: () => !!dsk.explo?.enabled,          toggle: () => dsk.commands['/explo']() },
-	  { label: 'HealBot',            state: () => !!dsk.healbot?.enabled,        toggle: () => dsk.commands['/healbot']() },
-	  { label: 'Knitting',           state: () => !!dsk.knit?.enabled,           toggle: () => dsk.commands['/knit']() },
-	  { label: 'Smith Config',       state: () => !!dsk.smithManager?.visible,   toggle: () => dsk.commands['/smithconfig']() },
-	  { label: 'Repair Bot',         state: () => !!dsk.repair?.enabled,         toggle: () => dsk.commands['/repair']() },
-	  { label: 'Auto Resear',        state: () => !!dsk.resear?.enabled,         toggle: () => dsk.commands['/resear']() },
-	  { label: 'Assassin Winner',    state: () => !!dsk.assassin?.enabled,       toggle: () => dsk.commands['/assassinconfig']() },
-	  { label: 'Assassin Loser',     state: () => !!dsk.loser?.enabled,          toggle: () => dsk.commands['/loserconfig']()   },
-      { label: 'Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
-    ]},
-    { label: '🗡️  Hunt', items: [
-      { label: 'Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
-      { label: 'AutoKill',           state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
-      { label: 'Counter-Attack',   state: () => !!window._caActive,       toggle: () => dsk.commands['/counterattack']() },
-      { label: 'Auto Heal',          state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
-      { label: 'Auto Food',          state: () => !!dsk.food?.enabled,           toggle: () => dsk.commands['/food']() },
-      { label: 'Auto Caraway',       state: () => !!dsk.effct?.enabled,          toggle: () => dsk.commands['/effct']() },
-	  { label: 'Follow',             state: () => !!dsk.follow?.enabled,         toggle: () => dsk.commands['/follow']() },
-      { label: 'WW',                 state: () => !!dsk.ww?.enabled,             toggle: () => dsk.commands['/ww']() },
-      { label: 'Diso',               state: () => !!dsk.diso?.enabled,           toggle: () => dsk.commands['/diso']() },
-	  { label: 'Quest Painel',       state: () => dsk.questManager?.visible,     toggle: () => dsk.commands['/questhub']() },
-	  { label: 'Quest Hud',          state: () => dsk.questHud?.enabled,         toggle: () => dsk.commands['/questtext']() },
-    ]},
-    { label: '⛏️  Recursos', items: [
-      { label: '⛏️ Mine Hub',        state: () => !!(window.minm?.visible),      toggle: () => dsk.commands['/minehub']() },
-      { label: 'WC Mining',          state: () => !!dsk.wcmining?.enabled,       toggle: () => dsk.commands['/wcmining']() },
-	  { label: 'Crystal Rock',       state: () => !!dsk.crystal?.enabled,        toggle: () => dsk.commands['/crystal']() },
-      { label: 'Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
-      { label: 'Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
-	  { label: 'Forest Bot',         state: () => !!dsk.forest?.enabled,         toggle: () => dsk.commands['/forestconfig']() },
-      { label: 'Sheep Bot',          state: () => !!dsk.sheep?.enabled,          toggle: () => dsk.commands['/sheep']() },
-      { label: 'Clay Bot',           state: () => !!dsk.clay?.enabled,           toggle: () => dsk.commands['/claypanel']() },
-      { label: 'Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
-	  { label: 'Galinha Bot',        state: () => !!dsk.gal?.enabled,            toggle: () => dsk.commands['/galconfig']() },
-	  { label: 'Tinta',              state: () => !!dsk.tinta?.enabled,          toggle: () => dsk.commands['/tinta']() },
-    ]},
-    { label: '🛠️  Utilidades', items: [
-      { label: 'Speed',              state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
-	  { label: 'Teleport',           state: () => false,                         toggle: () => dsk.commands['/teleport']() },
-      { label: 'Bússola',            state: () => !!dsk.ginfo?.label?.visible,   toggle: () => dsk.commands['/compass']() },
-      { label: '% Barras',           state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
-      { label: 'Habilidades',        state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
-      { label: 'Inventario',         state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
-	  { label: 'Inv HTML',           state: () => !!document.getElementById('rodmod-inv-html'), toggle: () => dsk.commands['/invhtml']() },
-	  { label: 'Gem Skills',  		 state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
-      { label: 'Onlines',            state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
-      { label: 'Tribe List',         state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
-      { label: 'Radar',              state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
-      { label: 'Hide Name',          state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
-      { label: 'Zoom 1.5x',          state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
-      { label: 'Reconnect',          state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
-	  { label: 'Cavar',              state: () => !!dsk.cavar?.enabled,          toggle: () => dsk.commands['/cavar']() },
-	  { label: 'Base Repair',        state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
-	  { label: 'Sort Fooders',       state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
-	  { label: 'Sort Config',        state: () => !!scPanel,                     toggle: () => dsk.commands['/sortconfig']() },
-    ]},
-    { label: '⚙️  Config / UI', items: [
-      { label: 'Color Picker',       state: () => !!(typeof cp !== 'undefined' && cp?.visible),  toggle: () => dsk.commands['/colorpicker']() },
-      { label: 'Discord Config',     state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
-      { label: 'Discord',            state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
-      { label: 'Hub Button',         state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
-      { label: 'Hotbar',             state: () => !!dsk.compactHotbar?.enabled,  toggle: () => dsk.commands['/hotbar']() },
-      { label: 'Death Tracker',      state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
-      { label: 'Loot Tracker',       state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
-      { label: 'Buy (use /buy N)',   state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
-    ]},
-  ];
+  // Usa a mesma fonte do Menu PIXI.
+  const SECTIONS = RODMOD_MENU_SECTIONS;
 
 
   function createPanel() {
