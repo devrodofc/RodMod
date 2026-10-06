@@ -3612,7 +3612,17 @@ function _skillHudUpdate() {
   const name   = skillName  || '---';
   const level  = skillLevel ?? 0;
   const target = currentLevel > 0 ? ` / ${currentLevel}` : '';
-  const pct    = skill_status?.val != null ? Math.floor(skill_status.val) : 0;
+
+  // O progresso da skill representa duas casas decimais do nível.
+  // Ex.: 1 -> .01, 9 -> .09, 10 -> .10, 99 -> .99.
+  const rawPct = skill_status?.val != null
+    ? Math.floor(skill_status.val)
+    : 0;
+
+  const pct = String(
+    Math.max(0, Math.min(99, rawPct))
+  ).padStart(2, '0');
+
   dsk.skillHud.label.text = `⚔ ${name}: ${level}.${pct}${target}`;
 }
 
@@ -5485,14 +5495,62 @@ dsk.menu.updatePosition = () => {
 dsk.on('postLoop', dsk.menu.updatePosition);
 
 
+// ── MYSTERA WIKI ─────────────────────────────────────────────
+const RODMOD_WIKI_URL =
+  'https://mysteralegacy.fandom.com/wiki/MysteraLegacy_Wikia';
+
+function openRodModWiki() {
+  try {
+    // Android/Cordova: usa diretamente o InAppBrowser quando disponível.
+    if (
+      window.cordova &&
+      window.cordova.InAppBrowser &&
+      typeof window.cordova.InAppBrowser.open === 'function'
+    ) {
+      window.cordova.InAppBrowser.open(
+        RODMOD_WIKI_URL,
+        '_blank',
+        'location=yes'
+      );
+      return;
+    }
+
+    // Browser / extensões / cliente web.
+    // Nunca substitui a página atual do jogo.
+    const wikiWindow = window.open(
+      RODMOD_WIKI_URL,
+      '_blank'
+    );
+
+    if (!wikiWindow) {
+      dsk.localMsg(
+        'Wiki: não foi possível abrir uma nova janela',
+        '#f55'
+      );
+    }
+  } catch (e) {
+    console.error('[RodMod] Erro ao abrir Wiki:', e);
+
+    dsk.localMsg(
+      'Wiki: erro ao abrir',
+      '#f55'
+    );
+  }
+}
+
+dsk.setCmd('/wiki', () => {
+  openRodModWiki();
+});
+
+
 // Fonte única das opções do Menu e do Hub.
 // O Menu transforma estas seções em lista plana;
 // o Hub usa as categorias diretamente.
 const RODMOD_MENU_SECTIONS = [
   { label: '⚔️  Skills', items: [
-    { label: '🔢 Top Skill Calc',     state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
+    { label: '🔢 Top Skill Calc',     mode: 'open', state: () => !!(typeof tscD !== 'undefined' && tscD?.visible), toggle: () => dsk.commands['/topskill']() },
     { label: '⚙️ Rotation',    state: () => !!dsk.rotation?.enabled, toggle: () => dsk.commands['/rotationconfig']() },
-    { label: '⚙️ Skills Config',      state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
+    { label: '⚙️ Skills Config',      mode: 'open', state: () => !!dsk.armasManager?.enabled,   toggle: () => dsk.commands['/skillconfig']() },
     { label: '⭐ Skills',             state: () => !!dsk.skillHud?.enabled,       toggle: () => dsk.commands['/skills']() },
     { label: '▶️ Armas Bot',          state: () => !!dsk.armas?.enabled,          toggle: () => dsk.commands['/armas']() },
     { label: '🗡️ Sword',              state: () => !!dsk.sword?.enabled,          toggle: () => dsk.commands['/sword']() },
@@ -5515,7 +5573,7 @@ const RODMOD_MENU_SECTIONS = [
   ]},
 
   { label: '⛏️  Recursos', items: [
-    { label: '⛏️ Mine Hub',           state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
+    { label: '⛏️ Mine Hub',           mode: 'open', state: () => !!window.minm?.visible,         toggle: () => dsk.commands['/minehub']() },
     { label: '🪨 Recursos Bot',       state: () => !!dsk.recursos?.enabled,       toggle: () => dsk.commands['/recursosconfig']() },
     { label: '🌿 Aloe Bot',           state: () => !!dsk.aloe?.enabled,           toggle: () => dsk.commands['/aloe']() },
     { label: '🌲 Wood Farm',          state: () => !!dsk.wood?.enabled,           toggle: () => dsk.commands['/wood']() },
@@ -5530,7 +5588,7 @@ const RODMOD_MENU_SECTIONS = [
 
   { label: '🗡️  Hunt', items: [
     { label: '🕳️ UW',                 state: () => !!(typeof uwPresetEnabled !== 'undefined' && uwPresetEnabled), toggle: () => dsk.commands['/uw']() },
-    { label: '🐺 Hunt Hub',           state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
+    { label: '🐺 Hunt Hub',           mode: 'open', state: () => !!document.getElementById('rodmod-hunt-hub'), toggle: () => dsk.commands['/hunt']() },
     { label: 'AutoKill',              state: () => !!dsk.autokill?.enabled,       toggle: () => dsk.commands['/autokill']() },
     { label: 'Counter-Attack',        state: () => !!window._caActive,            toggle: () => dsk.commands['/counterattack']() },
     { label: 'Auto Heal',             state: () => !!dsk.heal?.enabled,           toggle: () => dsk.commands['/heal']() },
@@ -5544,17 +5602,17 @@ const RODMOD_MENU_SECTIONS = [
   { label: '🛠️  Utilidades', items: [
     { label: 'Speed',                 state: () => !!dsk.speed?.enabled,          toggle: () => dsk.commands['/speed']() },
     { label: 'Teleport',              state: () => false,                         toggle: () => dsk.commands['/teleport']() },
-    { label: 'Onlines',               state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
-    { label: 'Tribe List',            state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
+    { label: 'Onlines',               mode: 'open', state: () => !!dsk.whoManager?.enabled,     toggle: () => dsk.commands['/on']() },
+    { label: 'Tribe List',            mode: 'open', state: () => !!dsk.tribeManager?.enabled,   toggle: () => dsk.commands['/tlist']() },
     { label: 'Zoom',                  state: () => !!dsk.zoom?.enabled,           toggle: () => dsk.commands['/zoom']() },
     { label: 'Reconnect',             state: () => !!dsk.reconnect?.enabled,      toggle: () => dsk.commands['/reconnect']() },
-    { label: 'Habilidades',           state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
-    { label: 'Inventário',            state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
-    { label: 'Gem Skills',            state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
+    { label: 'Habilidades',           mode: 'open', state: () => !!dsk.ablManager?.enabled,     toggle: () => dsk.commands['/abl']() },
+    { label: 'Inventário',            mode: 'open', state: () => !!dsk.invManager?.enabled,     toggle: () => dsk.commands['/inv']() },
+    { label: 'Gem Skills',            mode: 'open', state: () => !!document.getElementById('rodmod-gem-skills'), toggle: () => dsk.commands['/gemskills']() },
     { label: 'Base Repair',           state: () => !!dsk.baseRepair?.enabled,     toggle: () => dsk.commands['/baserepair']() },
     { label: 'Org Runas',             state: () => !!dsk.sort?.enabled,           toggle: () => dsk.commands['/sort']() },
-    { label: 'Runas Config',          state: () => !!(typeof scPanel !== 'undefined' && scPanel), toggle: () => dsk.commands['/sortconfig']() },
-    { label: 'Quest Painel',          state: () => !!dsk.questManager?.visible,   toggle: () => dsk.commands['/questhub']() },
+    { label: 'Runas Config',          mode: 'open', state: () => !!(typeof scPanel !== 'undefined' && scPanel), toggle: () => dsk.commands['/sortconfig']() },
+    { label: 'Quest Painel',          mode: 'open', state: () => !!dsk.questManager?.visible,   toggle: () => dsk.commands['/questhub']() },
     { label: 'Quest Hud',             state: () => !!dsk.questHud?.enabled,       toggle: () => dsk.commands['/questtext']() },
   ]},
 
@@ -5564,12 +5622,13 @@ const RODMOD_MENU_SECTIONS = [
     { label: '% Barras',              state: () => !!dsk.bars?.enabled,           toggle: () => dsk.commands['/bars']() },
     { label: 'Radar',                 state: () => !!dsk.radar?.enabled,          toggle: () => dsk.commands['/radar']() },
     { label: 'Hide Name',             state: () => !!dsk.hide?.enabled,           toggle: () => dsk.commands['/hide']() },
-    { label: 'Color Picker',          state: () => !!(typeof cp !== 'undefined' && cp?.visible), toggle: () => dsk.commands['/colorpicker']() },
-    { label: 'Discord Config',        state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
+    { label: 'Color Picker',          mode: 'open', state: () => !!(typeof cp !== 'undefined' && cp?.visible), toggle: () => dsk.commands['/colorpicker']() },
+    { label: 'Discord Config',        mode: 'open', state: () => !!(typeof dcm !== 'undefined' && dcm?.visible), toggle: () => dsk.commands['/discordconfig']() },
     { label: 'Discord',               state: () => !!dsk.discord?.enabled,        toggle: () => dsk.commands['/discord']() },
     { label: 'Hub Button',            state: () => !!hubBtnVisible,               toggle: () => dsk.commands['/btnhub']() },
     { label: 'Death Tracker',         state: () => !!dsk.deathManager?.visible,   toggle: () => dsk.commands['/deathtracker']() },
     { label: 'Loot Tracker',          state: () => !!mineHubLoot?.enabled,        toggle: () => dsk.commands['/loottracker']() },
+    { label: '📖 Wiki',                mode: 'open', state: () => false,                         toggle: () => dsk.commands['/wiki']() },
     { label: 'Buy (use /buy N)',      state: () => false,                         toggle: () => dsk.localMsg('Use /buy <qtd> no chat', '#ff0') },
   ]},
 ];
@@ -5684,7 +5743,10 @@ dsk.menu.rebuild = () => {
         dsk.invManager?.visible   ||
         dsk.whoManager?.visible   ||
         dsk.tribeManager?.visible;
-      if (item.state() || dialogOpen) dsk.menu.visible = false;
+      if (item.mode === 'open' || item.state() || dialogOpen) {
+        dsk.menu.visible = false;
+      }
+
       dsk.menu.refresh();
     };
     dsk.menu.btns.push(btn);
@@ -5698,8 +5760,18 @@ dsk.menu.rebuild = () => {
 dsk.menu.refresh = () => {
   dsk.menu.btns.forEach(btn => {
     if (!btn.item || btn.item.type === 'section') return;  // pula separadores
+
+    btn.lbl.text = btn.item.label;
+
+    // Painéis/ações não possuem estado ON/OFF.
+    if (btn.item.mode === 'open') {
+      btn.status.text = 'ABRIR';
+      btn.status.style.fill = 0x66b3ff;
+      btn.tint = 0x3478b8;
+      return;
+    }
+
     const on = btn.item.state();
-    btn.lbl.text    = btn.item.label;
     btn.status.text = on ? 'ON' : 'OFF';
     btn.status.style.fill = on ? 0x00ff00 : 0xff4444;
     btn.tint = on ? 0x44bb44 : 0xbb4444;
@@ -6072,9 +6144,29 @@ dsk.setCmd('/counterattack', () => {
 
         function update() {
           try {
+            // Painéis/ações recebem um botão visual azul "ABRIR".
+            if (item.mode === 'open') {
+              status.textContent = 'ABRIR';
+              status.style.color = '#fff';
+              status.style.background = '#2471a3';
+              status.style.border = '1px solid #3498db';
+              status.style.borderRadius = '5px';
+              status.style.padding = '2px 6px';
+              status.style.minWidth = '38px';
+              status.style.textAlign = 'center';
+              return;
+            }
+
             const on = item.state();
+
             status.textContent = on ? 'ON' : 'OFF';
             status.style.color = on ? '#2ecc71' : '#e74c3c';
+            status.style.background = 'transparent';
+            status.style.border = 'none';
+            status.style.borderRadius = '0';
+            status.style.padding = '0';
+            status.style.minWidth = '28px';
+            status.style.textAlign = 'right';
           } catch (_) {}
         }
         update();
